@@ -39,6 +39,7 @@ public class ExtendedUnreal : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"UnrealEd",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

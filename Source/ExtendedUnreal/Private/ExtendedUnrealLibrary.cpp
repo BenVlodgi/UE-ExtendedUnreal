@@ -3,7 +3,14 @@
 #include "ExtendedUnrealLibrary.h"
 #include "ExtendedUnrealModule.h"
 
+
+#if WITH_EDITOR
+#include "UnrealEdGlobals.h"
+#include "Editor/UnrealEdEngine.h"
+#endif
+
 #include <Editor/ContentBrowser/Private/ContentBrowserUtils.h>
+#include "UObject/NameTypes.h"
 #include "CoreMinimal.h"
 
 UExtendedUnrealLibrary::UExtendedUnrealLibrary(const FObjectInitializer& ObjectInitializer)
@@ -154,4 +161,32 @@ FString UExtendedUnrealLibrary::Conv_GameplayTagToString(const FGameplayTag& Gam
 FName UExtendedUnrealLibrary::Conv_GameplayTagToName(const FGameplayTag& GameplayTag)
 {
 	return GameplayTag.GetTagName();
+}
+
+void UExtendedUnrealLibrary::ToDisplayString(const FString String, FString& DisplayString, const bool bIsBool)
+{
+	DisplayString = *FName::NameToDisplayString(String, bIsBool);
+}
+
+void UExtendedUnrealLibrary::FocusViewportToSelection(const UObject* WorldContextObject)
+{
+#if WITH_EDITOR
+	if (GUnrealEd && WorldContextObject)
+	{
+		GUnrealEd->Exec(WorldContextObject->GetWorld(), TEXT("CAMERA ALIGN ACTIVEVIEWPORTONLY"));
+	}
+#endif
+}
+
+//void UExtendedUnrealLibrary::FocusViewportToActor(const UObject* WorldContextObject)
+//{
+//#if WITH_EDITOR
+//	// TODO: Implement this
+//#endif
+//}
+
+
+TArray<UObject*> UExtendedUnrealLibrary::CastArray(const TArray<UObject*> Array, const TSubclassOf<UObject> Class)
+{
+	return Array;
 }

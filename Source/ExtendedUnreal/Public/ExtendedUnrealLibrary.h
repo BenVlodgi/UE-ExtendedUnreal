@@ -68,4 +68,15 @@ public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "To Name (GameplayTag)", CompactNodeTitle = "->", BlueprintAutocast), Category = "GameplayTags")
 	static FName Conv_GameplayTagToName(const FGameplayTag& GameplayTag);
 
+	UFUNCTION(BlueprintCallable, Category = "Utilities|String")
+	static void ToDisplayString(const FString String, FString& DisplayString, const bool bIsBool = false);
+	
+	UFUNCTION(BlueprintCallable, Category = "Level Editor", meta=(WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", HidePin = "WorldContextObject", DevelopmentOnly))
+	static void FocusViewportToSelection(const UObject* WorldContextObject);
+
+	//UFUNCTION(BlueprintCallable, Category = "Level Editor", meta = (WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", HidePin = "WorldContextObject", DevelopmentOnly))
+	//static void FocusViewportToActor(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, Category = "Utilities|String", meta = (DeterminesOutputType = "Class"))
+	static TArray<UObject*> CastArray(const TArray<UObject*> Array, const TSubclassOf<UObject> Class);
 };

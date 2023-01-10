@@ -18,7 +18,7 @@
 		{
 			"Name": "ExtendedUnreal",
 			"Type": "Runtime",
-			"LoadingPhase": "PreLoadingScreen"
+			"LoadingPhase": "PostEngineInit"
 		}
 	]
 }

@@ -21,8 +21,8 @@ public:
 	static float GetWorldGravity(const UObject* WorldContextObject);
 
 
-	UFUNCTION(BlueprintCallable, Category = "Editor")
-	static void ExploreFolders();
+	//UFUNCTION(BlueprintCallable, Category = "Editor")
+	//static void ExploreFolders();
 
 
 	UFUNCTION(BlueprintPure, Category = "World", meta = (DefaultToSelf = "WorldContextObject"))
@@ -35,7 +35,7 @@ public:
 	static void MakeBrushFromAppStyle(FName Name, FSlateBrush& Brush);
 
 	UFUNCTION(BlueprintPure, Category = "Widget|Brush")
-	static void MakeBrushFromSVGPath(const FString SVGPath, FSlateBrush& Brush, const FVector2D& InImageSize = FVector2D(16.0f, 16.0f));
+	//static void MakeBrushFromSVGPath(const FString SVGPath, FSlateBrush& Brush, const FVector2D& InImageSize = FVector2D(16.0f, 16.0f));
 
 	UFUNCTION(BlueprintPure, Category = "Utilities", meta = (DisplayName = "Get Soft Class Name"))
 	static FName GetSoftClassName(const TSoftClassPtr<UObject>& Class);

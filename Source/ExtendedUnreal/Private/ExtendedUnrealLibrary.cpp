@@ -36,13 +36,13 @@ float UExtendedUnrealLibrary::GetWorldGravity(const UObject* WorldContextObject)
 
 
 
-void UExtendedUnrealLibrary::ExploreFolders()
-{
-	//TArray<FContentBrowserItem> SelectedFiles;
-	//TWeakPtr<SAssetView> AssetView;
-
-	//ContentBrowserUtils::ExploreFolders(SelectedFiles, AssetView.Pin().ToSharedRef());
-}
+//void UExtendedUnrealLibrary::ExploreFolders()
+//{
+//	//TArray<FContentBrowserItem> SelectedFiles;
+//	//TWeakPtr<SAssetView> AssetView;
+//
+//	//ContentBrowserUtils::ExploreFolders(SelectedFiles, AssetView.Pin().ToSharedRef());
+//}
 
 
 WorldType UExtendedUnrealLibrary::GetWorldType(UObject* WorldContextObject)
@@ -76,17 +76,17 @@ void UExtendedUnrealLibrary::MakeBrushFromAppStyle(FName Name, FSlateBrush& Brus
 }
 
 
-void UExtendedUnrealLibrary::MakeBrushFromSVGPath(const FString SVGPath, FSlateBrush& Brush, const FVector2D& InImageSize)
-{
-	//Brush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
-	//FSlateBrush aBrush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
-	//FSlateVectorImageBrush aBrush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
-	// 
-	//Cast<FSlateStyleSet>(FCoreStyle::Get()).GetContentRootDir();
-	//FSlateBrush aBrush = FSlateVectorImageBrush(RootToContentDir(SVGPath, TEXT(".svg")), InImageSize)
-
-	Brush = FSlateBrush();
-}
+//void UExtendedUnrealLibrary::MakeBrushFromSVGPath(const FString SVGPath, FSlateBrush& Brush, const FVector2D& InImageSize)
+//{
+//	//Brush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
+//	//FSlateBrush aBrush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
+//	//FSlateVectorImageBrush aBrush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
+//	// 
+//	//Cast<FSlateStyleSet>(FCoreStyle::Get()).GetContentRootDir();
+//	//FSlateBrush aBrush = FSlateVectorImageBrush(RootToContentDir(SVGPath, TEXT(".svg")), InImageSize)
+//
+//	Brush = FSlateBrush();
+//}
 
 FName UExtendedUnrealLibrary::GetSoftClassName(const TSoftClassPtr<UObject>& Class)
 {

@@ -3,13 +3,13 @@
 
 ## Included
 
-| Structures   | Description                                                                                          |
-|--------------|------------------------------------------------------------------------------------------------------|
-| Object Array | Array of Objects, useful as a value in a Map (Dictionary).                                           |
+| Structures   | Description |
+|--------------|-------------|
+| Object Array | Array of Objects, useful as a value in a Map (Dictionary). |
 
-| Enums      | Description                                                                                          |
-|------------|------------------------------------------------------------------------------------------------------|
-| World Type | Specifies the goal/source of a World object (Blueprint Accessible version of the Engine EWorldType). |
+| Enums      | Description |
+|------------|-------------|
+| World Type | The type of world an object lives in. Describes the context in which it is being used (Editor, Game, Preview etc.) (Blueprint Accessible version of the Engine [EWorldType](https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/Engine/EWorldType__Type/)). |
 
 | Blueprint Functions               | Domain  |
 |-----------------------------------|---------|
@@ -29,13 +29,13 @@
 | Focus Viewport to Selection       | Editor  |
 
 
-| Macros                   | Description                                                                                                                                     |
-|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| Macros                   | Description |
+|--------------------------|-------------|
 | Merge                    | Merges two execution lines together and returns which execution line was used. This is useful for feeding into a `Select`.                      |
 | For Loop (Continue)      | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
 | For Each Loop (Continue) | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
 
 
-| Widgets     | Description                                                                                                                                     |
-|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| Widgets     | Description |
+|-------------|-------------|
 | Style Image | Displays the image associated the [AppStyle](https://docs.unrealengine.com/5.0/en-US/API/Runtime/SlateCore/Styling/FAppStyle/)'s Property Name. |

@@ -3,13 +3,13 @@
 
 ## Included
 
-| Structures   |
-|--------------|
-| Object Array |
+| Structures   | Description                                                                                          |
+|--------------|------------------------------------------------------------------------------------------------------|
+| Object Array | Array of Objects, useful as a value in a Map (Dictionary).                                           |
 
-| Enums      |
-|------------|
-| World Type |
+| Enums      | Description                                                                                          |
+|------------|------------------------------------------------------------------------------------------------------|
+| World Type | Specifies the goal/source of a World object (Blueprint Accessible version of the Engine EWorldType). |
 
 | Blueprint Functions               | Domain  |
 |-----------------------------------|---------|

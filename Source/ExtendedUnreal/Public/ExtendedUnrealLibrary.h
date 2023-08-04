@@ -56,6 +56,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (DefaultToSelf = "Target", ComponentClass = "ActorComponent", ComponentName, DeterminesOutputType = "ComponentClass", keywords="find"))
 	static UActorComponent* GetComponentByName(AActor* Target, TSubclassOf<UActorComponent> ComponentClass, FName ComponentName, bool bIncludeChildActors = false);
 
+	/**
+	 * Takes a string and breaks it down into a human readable string.
+	 * Example - "bCreateSomeStuff" becomes "Create Some Stuff?" and "DrawScale3D" becomes "Draw Scale 3D".
+	 * 
+	 * @param	DisplayString	The name to sanitize
+	 * @param	bIsBool			True if the name is a bool
+	 *
+	 * @return	the sanitized version of the display name
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Utilities|String")
 	static void ToDisplayString(const FString String, FString& DisplayString, const bool bIsBool = false);
 	

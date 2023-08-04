@@ -1,4 +1,4 @@
-// Some copyright should be here...
+// Copyright 2023 Dream Seed LLC.
 
 using UnrealBuildTool;
 
@@ -8,48 +8,44 @@ public class ExtendedUnreal : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-			}
-			);
+		PublicIncludePaths.AddRange(new string[]
+		{
+		});
 				
 		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				// ... add other private include paths required here ...
-			}
-			);
+		PrivateIncludePaths.AddRange(new string[]
+		{
+		});
 			
 		
-		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
-				"GameplayTags", // I believe this needs to be public, because I am using the FGameplayTag struct and cannot forward-declare it.
-				// ... add other public dependencies that you statically link with here ...
-			}
-			);
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core",
+            "GameplayTags",
+			"GameplayAbilities",
+		});
 			
 		
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"UnrealEd",
-				// ... add private dependencies that you statically link with here ...	
-			}
-			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
-			}
-			);
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"CoreUObject",
+			"Engine",
+			"Slate",
+			"SlateCore",
+            "NetCore", // ExtendedArrayLibrary uses this for "MARK_PROPERTY_DIRTY"
+		});
+
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.AddRange(new string[]
+            {
+                "UnrealEd",
+            });
+        }
+
+
+        DynamicallyLoadedModuleNames.AddRange(new string[]
+		{
+		});
 	}
 }

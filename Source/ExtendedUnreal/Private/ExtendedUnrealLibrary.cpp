@@ -1,17 +1,21 @@
-// Copyright 2022 Dream Seed LLC.
+// Copyright 2023 Dream Seed LLC.
 
 #include "ExtendedUnrealLibrary.h"
-#include "ExtendedUnrealModule.h"
 
+
+#include "ExtendedUnrealModule.h"
 
 #if WITH_EDITOR
 #include "UnrealEdGlobals.h"
 #include "Editor/UnrealEdEngine.h"
 #endif
 
-#include <Editor/ContentBrowser/Private/ContentBrowserUtils.h>
 #include "UObject/NameTypes.h"
 #include "CoreMinimal.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "GameFramework/Actor.h"
+
+
 
 UExtendedUnrealLibrary::UExtendedUnrealLibrary(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -34,8 +38,6 @@ float UExtendedUnrealLibrary::GetWorldGravity(const UObject* WorldContextObject)
 	return 0;
 }
 
-
-
 //void UExtendedUnrealLibrary::ExploreFolders()
 //{
 //	//TArray<FContentBrowserItem> SelectedFiles;
@@ -43,7 +45,6 @@ float UExtendedUnrealLibrary::GetWorldGravity(const UObject* WorldContextObject)
 //
 //	//ContentBrowserUtils::ExploreFolders(SelectedFiles, AssetView.Pin().ToSharedRef());
 //}
-
 
 WorldType UExtendedUnrealLibrary::GetWorldType(UObject* WorldContextObject)
 {
@@ -75,7 +76,6 @@ void UExtendedUnrealLibrary::MakeBrushFromAppStyle(FName Name, FSlateBrush& Brus
 	Brush = localBrush ? *localBrush : FSlateBrush();
 }
 
-
 //void UExtendedUnrealLibrary::MakeBrushFromSVGPath(const FString SVGPath, FSlateBrush& Brush, const FVector2D& InImageSize)
 //{
 //	//Brush = new IMAGE_BRUSH_SVG(SVGPath, InImageSize);
@@ -93,14 +93,15 @@ FName UExtendedUnrealLibrary::GetSoftClassName(const TSoftClassPtr<UObject>& Cla
 	return Class->GetFName();
 }
 
-
 FText UExtendedUnrealLibrary::GetSoftClassDisplayNameText(const TSoftClassPtr<UObject>& Class)
 {
+#if WITH_EDITORONLY_DATA
 	if (Class.IsValid())
 	{
 		return Class.Get()->GetDisplayNameText();
 	}
 	else
+#endif //WITH_EDITORONLY_DATA
 	{
 		FString AssetName = Class.GetAssetName();
 		return FText::FromString(AssetName);
@@ -111,7 +112,11 @@ FText UExtendedUnrealLibrary::GetSoftClassDisplayNameText(const TSoftClassPtr<UO
 
 FText UExtendedUnrealLibrary::GetClassDisplayNameText(const UClass* Class)
 {
+#if WITH_EDITORONLY_DATA
 	return IsValid(Class) ? Class->GetDisplayNameText() : FText();
+#else
+	return FText();
+#endif //WITH_EDITORONLY_DATA
 }
 
 FName UExtendedUnrealLibrary::GetSoftObjectName(const TSoftObjectPtr<UObject>& Object)
@@ -134,12 +139,12 @@ UActorComponent* UExtendedUnrealLibrary::GetComponentReferenceComponent(UPARAM(r
 	return Target.GetComponent(FallbackActor);
 }
 
-UActorComponent* UExtendedUnrealLibrary::GetComponentByName(AActor* Target, TSubclassOf<UActorComponent> ComponentClass, FName ComponentName)
+UActorComponent* UExtendedUnrealLibrary::GetComponentByName(AActor* Target, TSubclassOf<UActorComponent> ComponentClass, FName ComponentName, bool bIncludeChildActors)
 {
 	if (IsValid(Target))
 	{
 		TArray<UActorComponent*> Components;
-		Target->GetComponents(ComponentClass, Components);
+		Target->GetComponents(ComponentClass, Components, bIncludeChildActors);
 
 		for (UActorComponent* Component : Components)
 		{
@@ -151,16 +156,6 @@ UActorComponent* UExtendedUnrealLibrary::GetComponentByName(AActor* Target, TSub
 	}
 
 	return nullptr;
-}
-
-FString UExtendedUnrealLibrary::Conv_GameplayTagToString(const FGameplayTag& GameplayTag)
-{
-	return GameplayTag.ToString();
-}
-
-FName UExtendedUnrealLibrary::Conv_GameplayTagToName(const FGameplayTag& GameplayTag)
-{
-	return GameplayTag.GetTagName();
 }
 
 void UExtendedUnrealLibrary::ToDisplayString(const FString String, FString& DisplayString, const bool bIsBool)
@@ -185,8 +180,59 @@ void UExtendedUnrealLibrary::FocusViewportToSelection(const UObject* WorldContex
 //#endif
 //}
 
+//void UExtendedUnrealLibrary::SetConstraintMaxForce(UPhysicsConstraintComponent* PhysicsConstraintComponent, double MaxForceX, double MaxForceY, double MaxForceZ)
+//{
+//	//PhysicsConstraintComponent->ConstraintInstance.constraint;
+//	//FPhysicsConstraintHandle& InConstraintRef;
+//	//InConstraintRef.Constraint
+//		//FConstraintProfileProperties
+//		//LinearDrive.ZDrive.MaxForce
+//}
 
-TArray<UObject*> UExtendedUnrealLibrary::CastArray(const TArray<UObject*> Array, const TSubclassOf<UObject> Class)
+TArray<AActor*> UExtendedUnrealLibrary::GetAttachedActorsOfClass(const AActor* Target, TSubclassOf<AActor> Class, bool bRecursivelyIncludeAttachedActors)
 {
-	return Array;
+	TArray<AActor*> AttachedActors;
+	GetAttachedActorsOfClass_InternalAppend(Target, Class, AttachedActors, bRecursivelyIncludeAttachedActors);
+	return AttachedActors;
+}
+
+void UExtendedUnrealLibrary::GetAttachedActorsOfClass_InternalAppend(const AActor* Target, TSubclassOf<AActor> Class, TArray<AActor*>& AttachedActors, bool bRecursivelyIncludeAttachedActors)
+{
+	if (!Target) return;
+
+	if (!Class) Class = AActor::StaticClass();
+
+	Target->ForEachAttachedActors([Target, Class, bRecursivelyIncludeAttachedActors, &AttachedActors](AActor* AttachedActor)
+		{
+			if (AttachedActor->GetClass()->IsChildOf(Class))
+			{
+				int32 OriginalNumActors = AttachedActors.Num();
+
+				if ((OriginalNumActors <= AttachedActors.AddUnique(AttachedActor)) && bRecursivelyIncludeAttachedActors)
+				{
+					GetAttachedActorsOfClass_InternalAppend(Target, Class, AttachedActors, true);
+				}
+			}
+			return true;
+		});
+}
+
+AActor* UExtendedUnrealLibrary::GetFirstAttachedActorOfClass(const AActor* Target, TSubclassOf<AActor> Class)
+{
+	if (!Target) return nullptr;
+
+	if (!Class) Class = AActor::StaticClass();
+
+	AActor* AttachedActor = nullptr;
+	Target->ForEachAttachedActors([Target, Class, &AttachedActor](AActor* LoopAttachedActor)
+		{
+			if (LoopAttachedActor->GetClass()->IsChildOf(Class))
+			{
+				AttachedActor = LoopAttachedActor;
+				return false;
+			}
+			return true;
+		});
+
+	return AttachedActor;
 }

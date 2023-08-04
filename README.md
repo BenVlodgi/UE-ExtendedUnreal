@@ -10,23 +10,66 @@
 | Enums      | Description |
 |------------|-------------|
 | World Type | The type of world an object lives in. Describes the context in which it is being used (Editor, Game, Preview etc.) (Blueprint Accessible version of the Engine [EWorldType](https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/Engine/EWorldType__Type/)). |
+| Extended Blend Space Axis| Used as parameter  for `GetBlendSpaceAxisMinMax()` |
 
-| Blueprint Functions               | Domain  |
-|-----------------------------------|---------|
-| Get World Gravity                 | Runtime |
-| Get World Type                    | Runtime |
-| Make Brush from App Style         | Runtime |
-| Get Soft Class Name               | Runtime |
-| Get Soft Class Display Name Text  | Runtime |
-| Get Soft Object Name              | Runtime |
-| Get Class Display Name Text       | Runtime |
-| Get Component Reference Component | Runtime |
-| Get Component by Name             | Runtime |
-| To String (GameplayTag)           | Runtime |
-| To Name (GameplayTag)             | Runtime |
-| To Display String                 | Runtime |
-| Cast Array                        | Runtime |
-| Focus Viewport to Selection       | Editor  |
+
+| Class                   | Blueprint Functions               | Domain     |
+|-------------------------|-----------------------------------|------------|
+| Extended Unreal Library | Get World Gravity                 | Runtime    |
+| Extended Unreal Library | Get World Type                    | Runtime    |
+| Extended Unreal Library | Make Brush from App Style         | Runtime    |
+| Extended Unreal Library | Get Soft Class Name               | Runtime    |
+| Extended Unreal Library | Get Soft Class Display Name Text  | Developer  |
+| Extended Unreal Library | Get Soft Object Name              | Runtime    |
+| Extended Unreal Library | Get Class Display Name Text       | Developer  |
+| Extended Unreal Library | Get Component Reference Component | Runtime    |
+| Extended Unreal Library | Get Component by Name             | Runtime    |
+| Extended Unreal Library | To Display String                 | Runtime    |
+| Extended Unreal Library | Focus Viewport to Selection       | Developer  |
+| Extended Unreal Library | Get Attached Actors of Class      | Runtime    |
+| Extended Unreal Library | Get First Attached Actor of Class | Runtime    |
+
+| Extended Animation Library | Get Blend Space Axis Min Max | Runtime  |
+
+| Extended Array Library | Cast Array          | Runtime |
+| Extended Array Library | RemoveItems (Array) | Runtime |
+| Extended Array Library | To Set (Array)      | Runtime |
+
+| Extended Map Library   | Find Keys by Value  | Runtime |
+
+| Extended Curve Library | Get Float Value (Runtime Float Curve) | Runtime |
+| Extended Curve Library | Get Time Range (Runtime Float Curve)  | Runtime |
+| Extended Curve Library | Get Value Range (Runtime Float Curve) | Runtime |
+| Extended Curve Library | Is Constant (Runtime Float Curve)     | Runtime |
+| Extended Curve Library | Is Empty (Runtime Float Curve)        | Runtime |
+
+| Extended Gameplay Abilities Library | Has Ability                               | Runtime |
+| Extended Gameplay Abilities Library | Set Float Attribute Base (Ability System) | Runtime |
+| Extended Gameplay Abilities Library | Set Float Attribute Base (Actor)          | Runtime |
+| Extended Gameplay Abilities Library | Get SetByCaller Tag Magnitudes            | Runtime |
+| Extended Gameplay Abilities Library | Get SetByCaller Name Magnitudes           | Runtime |
+| Extended Gameplay Abilities Library | Get SetByCaller Tag Magnitudes            | Runtime |
+| Extended Gameplay Abilities Library | Get SetByCaller Name Magnitudes"          | Runtime |
+| Extended Gameplay Abilities Library | Get GameplayEffect Class SetByCaller Tag | Runtime |
+
+| Extended Gameplay Tag Library | Add GameplayTag Containers        | Runtime |
+| Extended Gameplay Tag Library | To String (GameplayTag)           | Runtime |
+| Extended Gameplay Tag Library | To Name (GameplayTag)             | Runtime |
+| Extended Gameplay Tag Library | To GameplayTag (Name)             | Runtime |
+| Extended Gameplay Tag Library | To GameplayTagContainer (String)  | Runtime |
+| Extended Gameplay Tag Library | To GameplayTagContainer (Strings) | Runtime |
+| Extended Gameplay Tag Library | To String (GameplayTagContainer)  | Runtime |
+| Extended Gameplay Tag Library | To Strings (GameplayTagContainer) | Runtime |
+
+| Extended Math Library | Make Relative Rotator              | Runtime |
+| Extended Math Library | Signed Distance From Plane (Plane) | Runtime |
+| Extended Math Library | Equal (Plane)                      | Runtime |
+| Extended Math Library | Flip (Plane)                       | Runtime |
+| Extended Math Library | Is Valid (Plane)                   | Runtime |
+| Extended Math Library | Get Origin (Plane)                 | Runtime |
+| Extended Math Library | Get Normal (Plane)                 | Runtime |
+| Extended Math Library | Plane Dot (Plane)                  | Runtime |
+| Extended Math Library | Dot (Plane)                        | Runtime |
 
 
 | Macros                   | Description |

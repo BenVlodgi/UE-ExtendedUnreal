@@ -5,14 +5,14 @@
 
 #include "GameplayTagsManager.h"
 
-void UExtendedGameplayTagLibrary::AddGameplayTagContainers(UPARAM(ref) FGameplayTagContainer& TagContainer, UPARAM(ref) FGameplayTagContainer& AddTagContainer)
+void UExtendedGameplayTagLibrary::AddGameplayTagContainers(UPARAM(ref) FGameplayTagContainer& TagContainer, const FGameplayTagContainer& OtherTagContainer)
 {
 	TArray<FGameplayTag> AddTags;
-	AddTagContainer.GetGameplayTagArray(AddTags);
+	OtherTagContainer.GetGameplayTagArray(AddTags);
 
 	for (FGameplayTag AddTag : AddTags)
 	{
-		AddTagContainer.AddTag(AddTag);
+		TagContainer.AddTag(AddTag);
 	}
 }
 

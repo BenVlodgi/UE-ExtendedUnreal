@@ -20,13 +20,13 @@ class EXTENDEDUNREAL_API UExtendedGameplayTagLibrary : public UBlueprintFunction
 public:
 
 	/**
-	 * Adds a single tag to the passed in tag container
+	 * Adds tags from OtherTagContainer to the passed in TagContainer.
 	 *
-	 * @param InOutTagContainer		The container that will be appended too.
-	 * @param Tag					The tag to add to the container
+	 * @param TagContainer		The container that will be appended too.
+	 * @param OtherTagContainer	The tags to add to the container.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GameplayTags", meta = (BlueprintThreadSafe))
-	static void AddGameplayTagContainers(UPARAM(ref) FGameplayTagContainer& TagContainer, UPARAM(ref) FGameplayTagContainer& AddTagContainer);
+	static void AddGameplayTagContainers(UPARAM(ref) FGameplayTagContainer& TagContainer, const FGameplayTagContainer& OtherTagContainer);
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "To String (GameplayTag)", CompactNodeTitle = "->", BlueprintAutocast), Category = "GameplayTags")
 	static FString Conv_GameplayTagToString(FGameplayTag GameplayTag);

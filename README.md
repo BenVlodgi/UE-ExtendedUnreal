@@ -7,9 +7,10 @@
 
 # Extended Unreal
 [Unreal Engine](https://www.unrealengine.com/en-US/) [Plugin](https://docs.unrealengine.com/5.1/en-US/plugins-in-unreal-engine/) Exposing functions to Blueprints and adding small utilities.
+
 Currently Compatible with Unreal Engine 5.3.
 
-## Included
+## Includes
 
 | Structures   | Description |
 |--------------|-------------|

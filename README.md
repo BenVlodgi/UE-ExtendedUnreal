@@ -1,4 +1,11 @@
-# [Extended Unreal](https://github.com/BenVlodgi/UE-ExtendedUnreal)
+<br/>
+<p align="center">
+  <a href="https://github.com/BenVlodgi/UE-ExtendedUnreal">
+    <img src="https://github.com/BenVlodgi/UE-ExtendedUnreal/assets/1462374/f65a86dd-56ab-41b4-a3be-bc9442fb3341" alt="Logo" width="640" height="320">
+  </a>
+</p>
+
+# Extended Unreal
 [Unreal Engine](https://www.unrealengine.com/en-US/) [Plugin](https://docs.unrealengine.com/5.1/en-US/plugins-in-unreal-engine/) Exposing functions to Blueprints and adding small utilities.
 Currently Compatible with Unreal Engine 5.3.
 

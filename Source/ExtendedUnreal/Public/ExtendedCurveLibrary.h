@@ -37,14 +37,16 @@ public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Is Empty", Category = "Math|Curves"))
 	static void RuntimeFloatCurveIsEmpty(const FRuntimeFloatCurve& Curve, bool& IsEmpty);
 
-	/** Returns Curve Float object. 
+	/** 
+	 * Returns Curve Float object. 
 	 * If using External Curve: that will be returned.
 	 * Else a new curve object will be created with the curve data.
 	 */
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Get Curve", Category = "Math|Curves"))
 	static UPARAM(DisplayName = "Float Curve") UCurveFloat* RuntimeFloatCurve_GetCurve(const FRuntimeFloatCurve& Curve);
 
-	/** Returns Curve Vector object.
+	/**
+	 * Returns Curve Vector object.
 	 * If using External Curve: that will be returned.
 	 * Else a new curve object will be created with the curve data.
 	 */

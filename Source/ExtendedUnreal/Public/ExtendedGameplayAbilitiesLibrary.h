@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
+
 #include "ExtendedGameplayAbilitiesLibrary.generated.h"
 
 class UAbilitySystemComponent;
@@ -55,6 +56,6 @@ public:
 
 	/** Returns true if the Actor has the given Ability */
 	UFUNCTION(BlueprintPure, Category = "Ability", meta = (DisplayName = "Has Ability"))
-	static bool HasAbility(const AActor* Actor, const TSubclassOf<UGameplayAbility>& Ability);
+	static UPARAM(DisplayName = "HasAbility") bool HasAbility(const AActor* Actor, const TSubclassOf<UGameplayAbility>& Ability);
 
 };

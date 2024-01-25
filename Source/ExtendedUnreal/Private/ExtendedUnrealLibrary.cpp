@@ -120,6 +120,11 @@ UActorComponent* UExtendedUnrealLibrary::GetComponentReferenceComponent(UPARAM(r
 	return Target.GetComponent(FallbackActor);
 }
 
+UActorComponent* UExtendedUnrealLibrary::GetSoftComponentReferenceComponent(UPARAM(ref) const FSoftComponentReference& Target, AActor* FallbackActor)
+{
+	return Target.GetComponent(FallbackActor);
+}
+
 FComponentReference UExtendedUnrealLibrary::MakeComponentReference(const UActorComponent* Component)
 {
 	// See FComponentEditorUtils::MakeComponentReference
@@ -140,13 +145,6 @@ FComponentReference UExtendedUnrealLibrary::MakeComponentReference(const UActorC
 	return Result;
 }
 
-
-
-UActorComponent* UExtendedUnrealLibrary::GetSoftComponentReferenceComponent(UPARAM(ref) const FSoftComponentReference& Target, AActor* FallbackActor)
-{
-	return Target.GetComponent(FallbackActor);
-}
-
 UActorComponent* UExtendedUnrealLibrary::GetComponentByName(AActor* Target, TSubclassOf<UActorComponent> ComponentClass, FName ComponentName, bool bIncludeChildActors)
 {
 	if (IsValid(Target))
@@ -164,17 +162,6 @@ UActorComponent* UExtendedUnrealLibrary::GetComponentByName(AActor* Target, TSub
 	}
 
 	return nullptr;
-}
-
-TArray<UActorComponent*> UExtendedUnrealLibrary::GetComponentsByClass(AActor* Target, TSubclassOf<UActorComponent> ComponentClass, bool bIncludeChildActors)
-{
-	TArray<UActorComponent*> Components;
-	if (Target)
-	{
-		Target->GetComponents(ComponentClass, Components, bIncludeChildActors);
-	}
-
-	return MoveTemp(Components);
 }
 
 void UExtendedUnrealLibrary::ToDisplayString(const FString String, FString& DisplayString, const bool bIsBool)

@@ -8,6 +8,9 @@
 
 #include "ExtendedWorldLibrary.generated.h"
 
+/**
+ * Functions relating to the background world.
+ */
 UCLASS()
 class EXTENDEDUNREAL_API UExtendedWorldLibrary : public UBlueprintFunctionLibrary
 {

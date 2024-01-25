@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
+
 #include "ExtendedWorldPartitionLibrary.generated.h"
 
 
-class UWorldPartitionStreamingSourceComponent;
-
 /**
- * 
+ * Helper functions for World Partition.
  */
 UCLASS()
 class EXTENDEDUNREAL_API UExtendedWorldPartitionLibrary : public UBlueprintFunctionLibrary
@@ -22,5 +22,5 @@ public:
 	static bool IsCollisionLoaded(const UObject* WorldContextObject, const FName TargetGrid, const FVector& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Streaming|Debug", meta = (CallableWithoutWorldContext, DevelopmentOnly, DisplayName = "Set Default Visualizer Loading Range", CompactNodeTitle = "VisualizerRange"))
-	static void SetWorldPartitionStreamingSource_DefaultVisualizerLoadingRange(UWorldPartitionStreamingSourceComponent* StreamingSourceComponent, const float Range);
+	static void SetWorldPartitionStreamingSource_DefaultVisualizerLoadingRange(class UWorldPartitionStreamingSourceComponent* StreamingSourceComponent, const float Range);
 };

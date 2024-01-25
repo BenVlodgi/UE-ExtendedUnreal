@@ -99,4 +99,16 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, meta = (ScriptMethod = "MakeRelative", Keywords = "convert, torelative"), Category = "Math|Rotator")
 	static FRotator MakeRelativeRotator(const FRotator& A, const FRotator& RelativeTo);
+
+	UFUNCTION(BlueprintCallable, meta = (Keywords = ""), Category = "Math|Vector")
+	static double VectorLengthAlongDirection(const FVector& Vector, const FVector& Direction);
+
+	/**
+	 * Set this vector's length in-place. If the vector is 0 length, it will remain that way.
+	 *
+	 * @param Tolerance Minimum squared length of vector for normalization.
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Set Length In Place (Vector)", Keywords = "size"), Category = "Math|Vector")
+	static void Vector_SetLength(UPARAM(ref) FVector& Vector, const double Length);
+
 };

@@ -1,7 +1,10 @@
-// Copyright 2023 Dream Seed LLC.
+// Copyright 2024 Dream Seed LLC.
 
 
 #include "ExtendedCurveLibrary.h"
+
+
+#include "Curves/CurveVector.h"
 
 float UExtendedCurveLibrary::RuntimeFloatCurveValue(const FRuntimeFloatCurve& Curve, double InTime)
 {
@@ -51,4 +54,34 @@ void UExtendedCurveLibrary::RuntimeFloatCurveIsEmpty(const FRuntimeFloatCurve& C
 		IsEmpty = RichCurve->IsEmpty();
 	else
 		IsEmpty = true;
+}
+
+UCurveFloat* UExtendedCurveLibrary::RuntimeFloatCurve_GetCurve(const FRuntimeFloatCurve& Curve)
+{
+	if (Curve.ExternalCurve)
+	{
+		return Curve.ExternalCurve;
+	}
+	else
+	{
+		UCurveFloat* NewCurve = NewObject<UCurveFloat>();
+		NewCurve->FloatCurve = *Curve.GetRichCurveConst();
+		return NewCurve;
+	}
+}
+
+UCurveVector* UExtendedCurveLibrary::RuntimeVectorCurve_GetCurve(const FRuntimeVectorCurve& Curve)
+{
+	if (Curve.ExternalCurve)
+	{
+		return Curve.ExternalCurve;
+	}
+	else
+	{
+		UCurveVector* NewCurve = NewObject<UCurveVector>();
+		NewCurve->FloatCurves[0] = *Curve.GetRichCurveConst(0);
+		NewCurve->FloatCurves[1] = *Curve.GetRichCurveConst(1);
+		NewCurve->FloatCurves[2] = *Curve.GetRichCurveConst(2);
+		return NewCurve;
+	}
 }

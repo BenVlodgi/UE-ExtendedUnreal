@@ -53,3 +53,29 @@ FRotator UExtendedMathLibrary::MakeRelativeRotator(const FRotator& A, const FRot
 
 	return FRotator(InverseQuat * AQuat);
 }
+
+double UExtendedMathLibrary::VectorLengthAlongDirection(const FVector& Vector, const FVector& Direction)
+{
+    // Calculate the vector projection
+    double DotProduct = FVector::DotProduct(Vector, Direction);
+    double DirectionMagnitudeSquared = Direction.SizeSquared();
+
+    // Ensure that the direction vector is not zero to avoid division by zero
+    if (DirectionMagnitudeSquared > 0)
+    {
+        FVector Projection = (DotProduct / DirectionMagnitudeSquared) * Direction;
+        double LengthAlongDirection = Projection.Size();
+
+        return LengthAlongDirection;
+    }
+    else
+    {
+        return 0.0;
+    }
+}
+
+void UExtendedMathLibrary::Vector_SetLength(UPARAM(ref) FVector& Vector, const double Length)
+{
+    Vector.Normalize();
+    Vector *= Length;
+}

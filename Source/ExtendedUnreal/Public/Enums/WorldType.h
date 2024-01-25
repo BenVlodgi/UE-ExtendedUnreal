@@ -7,7 +7,8 @@
 
 // Specifies the goal/source of a UWorld object
 UENUM(BlueprintType)
-enum class WorldType : uint8 {
+enum class WorldType : uint8
+{
 	/** An untyped world, in most cases this will be the vestigial worlds of streamed in sub-levels */
 	None,
 

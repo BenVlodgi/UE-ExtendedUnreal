@@ -23,7 +23,10 @@ public class ExtendedUnreal : ModuleRules
 			"Core",
             "GameplayTags",
 			"GameplayAbilities",
-		});
+            "ControlRig", // For RigUnit_SphereTraceByTraceProfile
+            "RigVM", // For RigUnit_SphereTraceByTraceProfile
+            "PhysicsControl", // For ExtendedPhysicsControl
+        });
 			
 		
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -33,7 +36,8 @@ public class ExtendedUnreal : ModuleRules
 			"Slate",
 			"SlateCore",
             "NetCore", // ExtendedArrayLibrary uses this for "MARK_PROPERTY_DIRTY"
-		});
+			
+        });
 
         if (Target.bBuildEditor)
         {

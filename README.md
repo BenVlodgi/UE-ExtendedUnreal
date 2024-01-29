@@ -45,6 +45,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Unreal** Library | Is Beginning Play (Actor)             | Runtime    |
 | Extended **Unreal** Library | Has Begun Play (Actor)                | Runtime    |
 | Extended **Unreal** Library | Is in Play (Actor)                    | Runtime    |
+| Extended **Unreal** Library | Set Actor Display Name                | Developer  |
 | Extended **Unreal** Library | Get Hash                              | Runtime    |
 | Extended **Unreal** Library | Get Custom Primitive Data             | Runtime    |
 | Extended **Unreal** Library | Get Custom Primitive Data Float       | Runtime    |

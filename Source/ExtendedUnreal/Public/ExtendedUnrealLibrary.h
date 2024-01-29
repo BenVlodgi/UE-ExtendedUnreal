@@ -143,6 +143,12 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	//static bool IsDuringConstructor();
 
 	/**
+	 * Change the name shown in the world outliner.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (keywords = "rename, label", DevelopmentOnly))
+	static void SetActorDisplayName(AActor* Actor, FString DisplayName);
+
+	/**
 	 * Generates the hash value for an element of this property.
 	 *
 	 * @param	Target		The value to get Hash of.

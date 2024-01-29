@@ -298,6 +298,17 @@ bool UExtendedUnrealLibrary::ActorIsInPlay(const AActor* Actor)
 //	return FUObjectThreadContext::Get().IsInConstructor > 0;
 //}
 
+void UExtendedUnrealLibrary::SetActorDisplayName(AActor* Actor, FString DisplayName)
+{
+#if WITH_EDITOR
+	if (IsValid(Actor))
+	{
+		Actor->SetActorLabel(*DisplayName);
+	}
+
+#endif //WITH_EDITOR
+}
+
 TArray<float> UExtendedUnrealLibrary::GetCustomPrimitiveData(const UPrimitiveComponent* Target)
 {
 	if (IsValid(Target))

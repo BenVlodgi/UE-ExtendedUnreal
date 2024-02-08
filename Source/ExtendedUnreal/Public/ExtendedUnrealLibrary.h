@@ -305,7 +305,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintCallable, Category = "Viewport")
 	static bool GetPlayerViewportTransform(const APlayerController* Player, FTransform& Transform);
 
-	UFUNCTION(BlueprintCallable, Category = "Components|Timeline", meta = (DisplayName = "Set Duration"))
+	UFUNCTION(BlueprintCallable, Category = "Components|Timeline", meta = (DisplayName = "Set Duration", Duration = "1.0"))
 	static void SetTimelineDuration(class UTimelineComponent* Timeline, double Duration);
 
 };

@@ -655,10 +655,10 @@ bool UExtendedUnrealLibrary::GetPlayerViewportTransform(const APlayerController*
 }
 
 
-void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, double Duration)
+void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, double )
 {
 	if (IsValid(Timeline))
 	{
-		Timeline->SetPlayRate(Duration / FMath::Max(0.001, Timeline->GetTimelineLength()));
+		Timeline->SetPlayRate(Timeline->GetTimelineLength() / FMath::Max(0.001, Duration));
 	}
 }

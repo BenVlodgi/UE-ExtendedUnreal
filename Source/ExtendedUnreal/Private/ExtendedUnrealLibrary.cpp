@@ -17,6 +17,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/AudioComponent.h"
 #include "Styling/SlateIconFinder.h"
+#include "Components/TimelineComponent.h"
 
 #include "Components/SplineComponent.h"
 
@@ -651,4 +652,13 @@ bool UExtendedUnrealLibrary::GetPlayerViewportTransform(const APlayerController*
 
 	Transform = FTransform::Identity;
 	return false;
+}
+
+
+void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, double Duration)
+{
+	if (IsValid(Timeline))
+	{
+		Timeline->SetPlayRate(Duration / FMath::Max(0.001, Timeline->GetTimelineLength()));
+	}
 }

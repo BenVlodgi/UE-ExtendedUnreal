@@ -67,6 +67,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Unreal** Library | Get Interface Implementor             | Runtime    |
 | Extended **Unreal** Library | Get Interface Implementors            | Runtime    |
 | Extended **Unreal** Library | GetPlayerViewportTransform            | Runtime    |
+| Extended **Unreal** Library | SetTimelineDuration                   | Runtime    |
 | Extended **World** Library | Get World Gravity | Runtime |
 | Extended **World** Library | Get World Type    | Runtime |
 | Extended **World** Library | Is Game World     | Runtime |

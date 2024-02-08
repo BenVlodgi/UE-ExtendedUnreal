@@ -655,7 +655,7 @@ bool UExtendedUnrealLibrary::GetPlayerViewportTransform(const APlayerController*
 }
 
 
-void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, double )
+void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, double Duration)
 {
 	if (IsValid(Timeline))
 	{

@@ -28,7 +28,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Class                       | Blueprint Functions                   | Domain     |
 |-----------------------------|---------------------------------------|------------|
 | Extended **Unreal** Library | Make Brush from App Style             | Runtime    |
-| Extended **Unreal** Library | Make Brus from Style Set              | Runtime    |
+| Extended **Unreal** Library | Make Brush from Style Set             | Runtime    |
 | Extended **Unreal** Library | Make Brush from Slate Icon            | Runtime    |
 | Extended **Unreal** Library | Get Soft Class Name                   | Runtime    |
 | Extended **Unreal** Library | Get Soft Class Display Name Text      | Developer  |
@@ -47,9 +47,15 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Unreal** Library | Has Begun Play (Actor)                | Runtime    |
 | Extended **Unreal** Library | Is in Play (Actor)                    | Runtime    |
 | Extended **Unreal** Library | Set Actor Display Name                | Developer  |
+| Extended **Unreal** Library | Rename Object                         | Runtime    |
+| Extended **Unreal** Library | Set Root Component                    | Runtime    |
+| Extended **Unreal** Library | Spawn Actor from Class                | Runtime    |
 | Extended **Unreal** Library | Get Hash                              | Runtime    |
+| Extended **Unreal** Library | Hash Combine                          | Runtime    |
+| Extended **Unreal** Library | Hash Combine Fast                     | Runtime    |
 | Extended **Unreal** Library | Get Custom Primitive Data             | Runtime    |
 | Extended **Unreal** Library | Get Custom Primitive Data Float       | Runtime    |
+| Extended **Unreal** Library | Copy Over Parameter Overrides         | Runtime    |
 | Extended **Unreal** Library | Does Class Implement Interface        | Runtime    |
 | Extended **Unreal** Library | Destroy Audio Component when Complete | Runtime    |
 | Extended **Unreal** Library | Is Actor in Actor Owner Chain         | Runtime    |
@@ -60,15 +66,47 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Unreal** Library | As Actor or Owner                     | Runtime    |
 | Extended **Unreal** Library | Bind Event to OnTransformUpdated      | Runtime    |
 | Extended **Unreal** Library | Unbind Event from OnTransformUpdated  | Runtime    |
+| Extended **Unreal** Library | Is Valid (DelegateHandleWrapper)      | Runtime    |
+| Extended **Unreal** Library | Reset (DelegateHandleWrapper)         | Runtime    |
+| Extended **Unreal** Library | Equal Equal (DelegateHandleWrapper)   | Runtime    |
+| Extended **Unreal** Library | Not Equal (DelegateHandleWrapper)     | Runtime    |
+| Extended **Unreal** Library | SetAutoPossessAI                      | Runtime    |
 | Extended **Unreal** Library | Set Preview Skeletal Mesh             | Developer  |
 | Extended **Unreal** Library | Get Distance Along Spline at Time     | Runtime    |
 | Extended **Unreal** Library | Get Time Along Spline at Time         | Runtime    |
 | Extended **Unreal** Library | Get Time Along Spline at Spline Point | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Capsule               | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Sphere                | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Box                   | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Capsule               | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Sphere                | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Box                   | Runtime    |
 | Extended **Unreal** Library | Get Owner Chain                       | Runtime    |
 | Extended **Unreal** Library | Get Interface Implementor             | Runtime    |
 | Extended **Unreal** Library | Get Interface Implementors            | Runtime    |
 | Extended **Unreal** Library | Get Player Viewport Transform         | Runtime    |
 | Extended **Unreal** Library | Set Timeline Duration                 | Runtime    |
+| Extended **Unreal** Library | IsInWater (Movement Component)        | Runtime    |
+| Extended **Unreal** Library | Get Level Editing Viewport Location   | Developer  |
+| Extended **Unreal** Library | Set Level Editing Viewport Location   | Developer  |
+| Extended **Unreal** Library | Get Level Editing Viewport Rotation   | Developer  |
+| Extended **Unreal** Library | Set Level Editing Viewport Rotation   | Developer  |
+| Extended **Unreal** Library | Set Absolute (Advanced)               | Runtime    |
+| Extended **Unreal** Library | Browse to Assets                      | Developer  |
+| Extended **Unreal** Library | Editor Request Play Session           | Developer  |
+| Extended **Unreal** Library | Create RenderTargetCube               | Runtime    |
+| Extended **Unreal** Library | Clear RenderTargetCube                | Runtime    |
+| Extended **Unreal** Library | Mark RenderTransform Dirty            | Runtime    |
+| Extended **Unreal** Library | Mark RenderState Dirty                | Runtime    |
+| Extended **Unreal** Library | Get AllowCPUAccess                    | Runtime    |
+| Extended **Unreal** Library | Set AllowCPUAccess                    | Developer  |
+| Extended **Unreal** Library | Flip Vectors                          | Runtime    |
+| Extended **Unreal** Library | Sphere Overlap Component Collision    | Runtime    |
+| Extended **Unreal** Library | Get Closest Point on Collision        | Runtime    |
+| Extended **Unreal** Library | Get Closest Point on BodySetup        | Runtime    |
+| Extended **Unreal** Library | Get Segments overlaping Component     | Runtime    |
+| Extended **Unreal** Library | IsLevelNameValid                      | Runtime    |
+| Extended **Unreal** Library | GetCharacterArrow                     | Developer  |           
 | Extended **World** Library | Get World Gravity | Runtime |
 | Extended **World** Library | Get World Type    | Runtime |
 | Extended **World** Library | Is Game World     | Runtime |

@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "VectorArray.h"
+
+
 #include "ExtendedMathLibrary.generated.h"
 
 /**
@@ -110,5 +113,48 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Set Length In Place (Vector)", Keywords = "size"), Category = "Math|Vector")
 	static void Vector_SetLength(UPARAM(ref) FVector& Vector, const double Length);
+
+
+	/**
+	 * Generates a list of points around a circle on the XY plane.
+	 */
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Points in Circle", Keywords = "ring"), Category = "Math")
+	static TArray<FVector> GetPointsInCircle(const FTransform& Transform, const double Radius, const int32 NumPoints);
+
+	static FVector ClosestPointOnBox(const FVector& Point, const FTransform& BoxTransform, const FVector& BoxExtents);
+
+	static FVector ClosestPointOnCapsule(const FVector& Point, const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight);
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Angle Distance (Degrees)"), Category = "Math")
+	static UPARAM(DisplayName = "Distance") double AngleDistanceDegrees(double A, double B);
+
+	// UNTESTED
+	UFUNCTION(BlueprintCallable, Category = "Rotator")
+	static void GetAxisAndAngleBetweenRotators(const FRotator& A, const FRotator& B, FVector& Axis, double& Angle);
+
+	// UNTESTED
+	UFUNCTION(BlueprintCallable, Category = "Vector")
+	static void GetAxisAndAngleBetweenVectors(const FVector& A, const FVector& B, FVector& Axis, double& Angle);
+
+	// DOESN'T WORK
+	// If the Axis is invalid, the result will be 0.
+	UFUNCTION(BlueprintPure, Category = "Rotator")
+	static UPARAM(DisplayName = "Angle") double GetRotatorAngleRelativeToAxis(const FRotator Rotator, const FVector Axis);
+
+	// Return the number closer to the Reference.
+	UFUNCTION(BlueprintPure, Category = "Float")
+	static UPARAM(DisplayName = "Nearest") double Nearest(const double Reference, const double A, const double B);
+
+	UFUNCTION(BlueprintPure, Category = "Float")
+	static UPARAM(DisplayName = "Nearest Angle") double NearestAngle(const double ReferenceAngle, const double AngleA, const double AngleB, UPARAM(DisplayName = "A is Nearest") bool& bAIsNearest);
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Lerp Angle (Degrees)"), Category = "Float")
+	static UPARAM(DisplayName = "Angle") double LerpAngleDegrees(double A, double B, double Alpha);
+
+	UFUNCTION(BlueprintCallable, Category = "Math")
+	static UPARAM(DisplayName = "Normal")FVector CalculateTriangleNormal(const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3);
+
+	UFUNCTION(BlueprintCallable, Category = "Math")
+	static UPARAM(DisplayName = "Up Normal") FVector CalculateEdgeUpDirection(const FVector& Vertex1, const FVector& Vertex2);
 
 };

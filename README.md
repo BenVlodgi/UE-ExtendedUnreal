@@ -142,6 +142,18 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Math** Library | Dot (Plane)                            | Runtime |
 | Extended **Math** Library | Get Points in Circle                   | Runtime |
 | Extended **Math** Library | Filter Split Path to Overlap Component | Runtime |
+| Extended **Math** Library | Get Points in Circle                   | Runtime |
+| Extended **Math** Library | Closest Point on Box                   | Runtime |
+| Extended **Math** Library | Closest Point on Capsule               | Runtime |
+| Extended **Math** Library | Angle Distance Degrees                 | Runtime |
+| Extended **Math** Library | Get Axis and Angle Between Rotators    | Runtime |
+| Extended **Math** Library | Get Axis and Angle Between Vectors     | Runtime |
+| Extended **Math** Library | Get Rotator Angle Relative to Axis     | Runtime |
+| Extended **Math** Library | Nearest                                | Runtime |
+| Extended **Math** Library | Nearest Angle                          | Runtime |
+| Extended **Math** Library | Lerp Angle Degrees                     | Runtime |
+| Extended **Math** Library | Calculate Triangle Normal              | Runtime |
+| Extended **Math** Library | Calculate Edge Up Direction            | Runtime |
 | Extended **Gameplay Abilities** Library | Has Ability                               | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Ability System) | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Actor)          | Runtime |
@@ -158,7 +170,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Gameplay Tag** Library | To GameplayTagContainer (Strings) | Runtime |
 | Extended **Gameplay Tag** Library | To String (GameplayTagContainer)  | Runtime |
 | Extended **Gameplay Tag** Library | To Strings (GameplayTagContainer) | Runtime |
-| Extended **World Partition** Library | Is Collision Loaded | Runtime |
+| Extended **World Partition** Library | Is Collision Loaded                  | Runtime |
 | Extended **World Partition** Library | Set Default Visualizer Loading Range | Runtime |
 | Extended **World** Library | Get World Gravity                  | Runtime |
 | Extended **World** Library | Get World Type                     | Runtime |

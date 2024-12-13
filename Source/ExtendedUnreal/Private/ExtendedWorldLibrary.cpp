@@ -73,3 +73,47 @@ bool UExtendedWorldLibrary::IsPreviewWorld(UObject* WorldContextObject)
 		WorldContextObject->GetWorld()->IsPreviewWorld() :
 		false;
 }
+
+bool UExtendedWorldLibrary::IsPlayingOrSimulatingInEditor(UObject* WorldContextObject)
+{
+	return IsValid(WorldContextObject) ?
+		WorldContextObject->GetWorld()->IsPlayInEditor() :
+		false;
+}
+
+bool UExtendedWorldLibrary::IsPlayingInEditor(UObject* WorldContextObject)
+{
+	return IsValid(WorldContextObject) ?
+		WorldContextObject->GetWorld()->IsPlayInEditor()
+#if WITH_EDITOR
+		&& !GEditor->IsSimulateInEditorInProgress()
+#endif
+		: false;
+}
+
+bool UExtendedWorldLibrary::IsSimulatingInEditor(UObject* WorldContextObject)
+{
+	return IsValid(WorldContextObject) ?
+		WorldContextObject->GetWorld()->IsPlayInEditor()
+#if WITH_EDITOR
+		&& GEditor->IsSimulateInEditorInProgress()
+#endif
+		: false;
+}
+
+void UExtendedWorldLibrary::WorldTypeQuery(UObject* WorldContextObject, const bool bGame, const bool bPIE, const bool bEditor, const bool bEditorPreview, const bool bGamePreview, const bool bGameRPC, const bool bInactiveEditor, bool& bMatch)
+{
+	bMatch = false;
+	switch(UExtendedWorldLibrary::GetWorldType(WorldContextObject))
+	{
+		case WorldType::None:			bMatch = false; break;
+		case WorldType::Game:			bMatch = bGame; break;
+		case WorldType::PIE:			bMatch = bPIE; break;
+		case WorldType::Editor:			bMatch = bEditor; break;
+		case WorldType::EditorPreview:	bMatch = bEditorPreview; break;
+		case WorldType::GamePreview:	bMatch = bGamePreview; break;
+		case WorldType::GameRPC:		bMatch = bGameRPC; break;
+		case WorldType::Inactive:		bMatch = bInactiveEditor; break;
+		default:						bMatch = false; break;
+	}
+}

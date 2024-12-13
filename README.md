@@ -160,11 +160,15 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Gameplay Tag** Library | To Strings (GameplayTagContainer) | Runtime |
 | Extended **World Partition** Library | Is Collision Loaded | Runtime |
 | Extended **World Partition** Library | Set Default Visualizer Loading Range | Runtime |
-| Extended **World** Library | Get World Gravity | Runtime |
-| Extended **World** Library | Get World Type    | Runtime |
-| Extended **World** Library | Is Game World     | Runtime |
-| Extended **World** Library | Is Editor World   | Runtime |
-| Extended **World** Library | Is Preview World  | Runtime |
+| Extended **World** Library | Get World Gravity                  | Runtime |
+| Extended **World** Library | Get World Type                     | Runtime |
+| Extended **World** Library | Is Game World                      | Runtime |
+| Extended **World** Library | Is Editor World                    | Runtime |
+| Extended **World** Library | Is Preview World                   | Runtime |
+| Extended **World** Library | Is Playing or Simulating in Editor | Runtime |
+| Extended **World** Library | Is Playing in Editor               | Runtime |
+| Extended **World** Library | Is Simulating in Editor            | Runtime |
+| Extended **World** Library | World Type Query                   | Runtime |
 
 
 

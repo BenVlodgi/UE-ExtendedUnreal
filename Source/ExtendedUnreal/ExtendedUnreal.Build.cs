@@ -36,7 +36,9 @@ public class ExtendedUnreal : ModuleRules
 			"Slate",
 			"SlateCore",
             "NetCore", // ExtendedArrayLibrary uses this for "MARK_PROPERTY_DIRTY"
-			
+			"AssetRegistry", // for UExtendedAnimationLibrary::GetAllAnimations
+			"RHI", // for UExtendedUnrealLibrary::ClearRenderTargetCube
+
         });
 
         if (Target.bBuildEditor)

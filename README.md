@@ -75,7 +75,10 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **World** Library | Is Editor World   | Runtime |
 | Extended **World** Library | Is Preview World  | Runtime |
 | Extended **World** Library | World Type Query  | Runtime |
-| Extended **Animation** Library | Get Blend Space Axis Min Max | Runtime  |
+| Extended **Animation** Library | Get Blend Space Axis Min Max    | Runtime  |
+| Extended **Animation** Library | Get Linked Anim Layers          | Runtime  |
+| Extended **Animation** Library | Get All Animations              | Runtime  |
+| Extended **Animation** Library | Get All Animations for Skeleton | Runtime  |
 | Extended **Array** Library | Cast Array                 | Runtime |
 | Extended **Array** Library | Remove Items               | Runtime |
 | Extended **Array** Library | To Set                     | Runtime |

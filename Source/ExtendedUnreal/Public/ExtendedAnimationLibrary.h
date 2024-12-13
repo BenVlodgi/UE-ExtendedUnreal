@@ -8,7 +8,6 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "ExtendedAnimationLibrary.generated.h"
 
-class UBlendSpace;
 
 /** Interpolation data types. */
 UENUM(BlueprintType)
@@ -34,5 +33,17 @@ public:
 	 * Get the min & max value for the given axis.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Blend Space")
-	static void GetBlendSpaceAxisMinMax(UBlendSpace* BlendSpace, EExtendedBlendSpaceAxis Axis, double& Min, double& Max);
+	static void GetBlendSpaceAxisMinMax(class UBlendSpace* BlendSpace, EExtendedBlendSpaceAxis Axis, double& Min, double& Max);
+
+	/** Get all linked layer Animation Instances for the target SkeletalMeshComponent. */
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh|Animation Blueprint Linking")
+	static TArray<UAnimInstance*> GetLinkedAnimLayers(const class USkeletalMeshComponent* Target);
+
+	/** Get all Animation Assets. */
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	static TArray<UAnimationAsset*> GetAllAnimations();
+
+	/** Get all animation assets for the target Skeleton. */
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	static TArray<UAnimationAsset*> GetAllAnimationsForSkeleton(const USkeleton* Skeleton);
 };

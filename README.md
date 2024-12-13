@@ -14,7 +14,8 @@ Currently Compatible with Unreal Engine 5.3.
 
 | Structures   | Description |
 |--------------|-------------|
-| Object Array | Array of Objects, useful as a value in a Map (Dictionary). |
+| Object Array | Array of Objects, useful as a value in a Map/Dictionary. |
+| Vector Array | Array of Vectors, useful as a value in a Map/Dictionary. |
 | Delegate Handle Wrapper | Delegate Handle holds ID of a delegate, used for unbinding. |
 
 
@@ -66,13 +67,14 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Unreal** Library | Get Owner Chain                       | Runtime    |
 | Extended **Unreal** Library | Get Interface Implementor             | Runtime    |
 | Extended **Unreal** Library | Get Interface Implementors            | Runtime    |
-| Extended **Unreal** Library | GetPlayerViewportTransform            | Runtime    |
-| Extended **Unreal** Library | SetTimelineDuration                   | Runtime    |
+| Extended **Unreal** Library | Get Player Viewport Transform         | Runtime    |
+| Extended **Unreal** Library | Set Timeline Duration                 | Runtime    |
 | Extended **World** Library | Get World Gravity | Runtime |
 | Extended **World** Library | Get World Type    | Runtime |
 | Extended **World** Library | Is Game World     | Runtime |
 | Extended **World** Library | Is Editor World   | Runtime |
 | Extended **World** Library | Is Preview World  | Runtime |
+| Extended **World** Library | World Type Query  | Runtime |
 | Extended **Animation** Library | Get Blend Space Axis Min Max | Runtime  |
 | Extended **Array** Library | Cast Array                 | Runtime |
 | Extended **Array** Library | Remove Items               | Runtime |
@@ -88,15 +90,17 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Curve** Library | Is Constant (Runtime Float Curve)     | Runtime |
 | Extended **Curve** Library | Is Empty (Runtime Float Curve)        | Runtime |
 | Extended **Curve** Library | Get Curve (Runtime Curve)             | Runtime |
-| Extended **Math** Library | Make Relative Rotator              | Runtime |
-| Extended **Math** Library | Signed Distance from Plane (Plane) | Runtime |
-| Extended **Math** Library | Equal (Plane)                      | Runtime |
-| Extended **Math** Library | Flip (Plane)                       | Runtime |
-| Extended **Math** Library | Is Valid (Plane)                   | Runtime |
-| Extended **Math** Library | Get Origin (Plane)                 | Runtime |
-| Extended **Math** Library | Get Normal (Plane)                 | Runtime |
-| Extended **Math** Library | Plane Dot (Plane)                  | Runtime |
-| Extended **Math** Library | Dot (Plane)                        | Runtime |
+| Extended **Math** Library | Make Relative Rotator                  | Runtime |
+| Extended **Math** Library | Signed Distance from Plane (Plane)     | Runtime |
+| Extended **Math** Library | Equal (Plane)                          | Runtime |
+| Extended **Math** Library | Flip (Plane)                           | Runtime |
+| Extended **Math** Library | Is Valid (Plane)                       | Runtime |
+| Extended **Math** Library | Get Origin (Plane)                     | Runtime |
+| Extended **Math** Library | Get Normal (Plane)                     | Runtime |
+| Extended **Math** Library | Plane Dot (Plane)                      | Runtime |
+| Extended **Math** Library | Dot (Plane)                            | Runtime |
+| Extended **Math** Library | Get Points in Circle                   | Runtime |
+| Extended **Math** Library | Filter Split Path to Overlap Component | Runtime |
 | Extended **Gameplay Abilities** Library | Has Ability                               | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Ability System) | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Actor)          | Runtime |

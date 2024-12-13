@@ -17,8 +17,33 @@ struct EXTENDEDUNREAL_API FDelegateHandleWrapper
 public:
 	FDelegateHandle DelegateHandle;
 
+	/** Returns true if this was ever bound to a delegate, but you need to check with the owning delegate to confirm it is still valid */
+	bool IsValid() const
+	{
+		return DelegateHandle.IsValid();
+	}
+
+	/** Clear handle to indicate it is no longer bound */
+	void Reset()
+	{
+		DelegateHandle.Reset();
+	}
+
+	bool operator==(const FDelegateHandleWrapper& Other) const
+	{
+		return DelegateHandle == Other.DelegateHandle;
+	}
+
+	bool operator!=(const FDelegateHandleWrapper& Other) const
+	{
+		return DelegateHandle != Other.DelegateHandle;
+	}
+	
+public:
+
 	friend FORCEINLINE uint32 GetTypeHash(const FDelegateHandleWrapper& Handle)
 	{
 		return GetTypeHash(Handle.DelegateHandle);
 	}
+
 };

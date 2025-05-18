@@ -29,6 +29,21 @@ float UExtendedWorldLibrary::GetWorldGravity(const UObject* WorldContextObject)
 	return 0;
 }
 
+bool UExtendedWorldLibrary::IsRunningConstructionScript(const UObject* WorldContextObject)
+{
+	if (IsValid(WorldContextObject))
+	{
+		UWorld* World = WorldContextObject->GetWorld();
+
+		if (IsValid(World))
+		{
+			return World->bIsRunningConstructionScript;
+		}
+	}
+
+	return false;
+}
+
 WorldType UExtendedWorldLibrary::GetWorldType(UObject* WorldContextObject)
 {
 	return IsValid(WorldContextObject) ? 

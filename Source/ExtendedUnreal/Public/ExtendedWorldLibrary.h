@@ -32,6 +32,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "World", meta = (WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", CallableWithoutWorldContext))
 	static float GetWorldGravity(const UObject* WorldContextObject);
 
+	/** True when world is in the process of running the construction script for an actor */
+	UFUNCTION(BlueprintPure, Category = "World", meta = (WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", CallableWithoutWorldContext, ReturnDisplayName = "RunningConstruction"))
+	static bool IsRunningConstructionScript(const UObject* WorldContextObject);
+
 	UFUNCTION(BlueprintPure, Category = "World|Type", meta = (WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", CallableWithoutWorldContext))
 	static WorldType GetWorldType(UObject* WorldContextObject);
 

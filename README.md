@@ -179,6 +179,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **World** Library | Is Preview World                   | Runtime |
 | Extended **World** Library | Is Playing or Simulating in Editor | Runtime |
 | Extended **World** Library | Is Playing in Editor               | Runtime |
+| Extended **World** Library | Is Running Construction Script     | Runtime |
 | Extended **World** Library | Is Simulating in Editor            | Runtime |
 | Extended **World** Library | World Type Query                   | Runtime |
 

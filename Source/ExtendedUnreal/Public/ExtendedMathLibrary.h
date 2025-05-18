@@ -1,10 +1,10 @@
-// Copyright 2023 Dream Seed LLC.
+// Copyright 2025 Dream Seed LLC.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "VectorArray.h"
+#include "Structs/VectorArray.h"
 
 
 #include "ExtendedMathLibrary.generated.h"
@@ -125,6 +125,10 @@ public:
 
 	static FVector ClosestPointOnCapsule(const FVector& Point, const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight);
 
+	/** Returns true if the outer sphere fully encloses the inner sphere (using centers and radii). */
+	UFUNCTION(BlueprintPure, Category = "Math|Geometry")
+	static bool SphereEnclosesSphere(const FVector& OuterCenter, double OuterRadius, const FVector& InnerCenter, double InnerRadius);
+
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Angle Distance (Degrees)"), Category = "Math")
 	static UPARAM(DisplayName = "Distance") double AngleDistanceDegrees(double A, double B);
 
@@ -156,5 +160,24 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Math")
 	static UPARAM(DisplayName = "Up Normal") FVector CalculateEdgeUpDirection(const FVector& Vertex1, const FVector& Vertex2);
+
+	/**
+	 * Returns a random index based on the provided WeightedArray.
+	 *
+	 * @param WeightedArray	Array of non-negative weights. Higher weight = higher chance of being selected. Zero and negative weights are ignored.
+	 * @return				The selected index based on the weight distribution, or INDEX_NONE if weights are invalid.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Math|Random", meta = (NotBlueprintThreadSafe))
+	static int32 RandomWeightedArrayItem(const TArray<double>& WeightedArray);
+
+	/**
+	 * Returns a random index based on the provided WeightedArray using a deterministic random stream.
+	 * 
+	 * @param Stream		Random stream to use for deterministic randomness.
+	 * @param WeightedArray	Array of non-negative weights. Higher weight = higher chance of being selected. Zero and negative weights are ignored.
+	 * @return				The selected index based on the weight distribution, or INDEX_NONE if weights are invalid.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Math|Random")
+	static int32 RandomWeightedArrayItemFromStream(const FRandomStream& Stream, const TArray<double>& WeightedArray);
 
 };

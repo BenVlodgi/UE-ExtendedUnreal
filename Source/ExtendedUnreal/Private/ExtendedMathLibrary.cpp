@@ -1,4 +1,4 @@
-// Copyright 2023 Dream Seed LLC.
+// Copyright 2025 Dream Seed LLC.
 
 
 #include "ExtendedMathLibrary.h"
@@ -146,6 +146,17 @@ FVector UExtendedMathLibrary::ClosestPointOnCapsule(const FVector& Point, const 
 }
 
 
+bool UExtendedMathLibrary::SphereEnclosesSphere(const FVector& OuterCenter, double OuterRadius, const FVector& InnerCenter, double InnerRadius)
+{
+	const double RadiusMargin = FMath::Abs(OuterRadius) - FMath::Abs(InnerRadius);
+
+	if (RadiusMargin < 0.0f)
+	{
+		return false;
+	}
+
+	return FVector::DistSquared(OuterCenter, InnerCenter) <= RadiusMargin * RadiusMargin;
+}
 
 
 double UExtendedMathLibrary::AngleDistanceDegrees(double A, double B)
@@ -277,3 +288,68 @@ FVector UExtendedMathLibrary::CalculateEdgeUpDirection(const FVector& Vertex1, c
 	return FVector::CrossProduct(EdgeVector, FVector::UpVector).GetSafeNormal();
 }
 
+int32 UExtendedMathLibrary::RandomWeightedArrayItem(const TArray<double>& WeightedArray)
+{
+	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0);
+	if (TotalWeight <= 0.0)
+	{
+		return INDEX_NONE;
+	}
+	
+	double RandomPoint = FMath::FRandRange(0.0, TotalWeight);
+	double AccumulatedWeight = 0.0;
+
+	for (int32 i = 0; i < WeightedArray.Num(); ++i)
+	{
+		AccumulatedWeight += WeightedArray[i];
+		if (RandomPoint <= AccumulatedWeight)
+		{
+			return i;
+		}
+	}
+
+	// Fallback to last entry due to float rounding
+	// Find the last non-zero entry.
+	for (int i = WeightedArray.Num() - 1; i >= 0; --i)
+	{
+		if (WeightedArray[i] > 0.0)
+		{
+			return i;
+		}
+	}
+
+	return INDEX_NONE; // This should never be reached as long as there was at least one non-zero weight.
+}
+
+int32 UExtendedMathLibrary::RandomWeightedArrayItemFromStream(const FRandomStream& Stream, const TArray<double>& WeightedArray)
+{
+	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0);
+	if (TotalWeight <= 0.0)
+	{
+		return INDEX_NONE;
+	}
+
+	double RandomPoint = Stream.FRandRange(0.0, TotalWeight);
+	double AccumulatedWeight = 0.0;
+
+	for (int32 i = 0; i < WeightedArray.Num(); ++i)
+	{
+		AccumulatedWeight += WeightedArray[i];
+		if (RandomPoint <= AccumulatedWeight)
+		{
+			return i;
+		}
+	}
+
+	// Fallback to last entry due to float rounding
+	// Find the last non-zero entry.
+	for (int i = WeightedArray.Num() - 1; i >= 0; --i)
+	{
+		if (WeightedArray[i] > 0.0)
+		{
+			return i;
+		}
+	}
+
+	return INDEX_NONE; // This should never be reached as long as there was at least one non-zero weight.
+}

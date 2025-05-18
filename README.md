@@ -145,6 +145,7 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Math** Library | Get Points in Circle                   | Runtime |
 | Extended **Math** Library | Closest Point on Box                   | Runtime |
 | Extended **Math** Library | Closest Point on Capsule               | Runtime |
+| Extended **Math** Library | Sphere Encloses Sphere                 | Runtime |
 | Extended **Math** Library | Angle Distance Degrees                 | Runtime |
 | Extended **Math** Library | Get Axis and Angle Between Rotators    | Runtime |
 | Extended **Math** Library | Get Axis and Angle Between Vectors     | Runtime |
@@ -154,6 +155,8 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Math** Library | Lerp Angle Degrees                     | Runtime |
 | Extended **Math** Library | Calculate Triangle Normal              | Runtime |
 | Extended **Math** Library | Calculate Edge Up Direction            | Runtime |
+| Extended **Math** Library | Random Weighted Array Item             | Runtime |
+| Extended **Math** Library | Random Weighted Array Item From Stream | Runtime |
 | Extended **Gameplay Abilities** Library | Has Ability                               | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Ability System) | Runtime |
 | Extended **Gameplay Abilities** Library | Set Float Attribute Base (Actor)          | Runtime |

@@ -102,3 +102,52 @@ bool UExtendedGameplayAbilitiesLibrary::HasAbility(const AActor* Actor, const TS
 
 	return false;
 }
+
+bool UExtendedGameplayAbilitiesLibrary::SetAbilityActorInfo(UAbilitySystemComponent* AbilitySystemComponent, AActor* OwnerActor, AActor* AvatarActor)
+{
+	if(!IsValid(AbilitySystemComponent) || !IsValid(OwnerActor) || !IsValid(AvatarActor)){ return false; }
+
+	AbilitySystemComponent->InitAbilityActorInfo(OwnerActor, AvatarActor);
+
+	return true;
+}
+
+void UExtendedGameplayAbilitiesLibrary::TryCancelAbilitiesByTag(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTag GameplayTag, const bool bReplicateCancelAbility)
+{
+	if (!IsValid(AbilitySystemComponent))
+		return;
+
+	FScopedAbilityListLock ActiveScopeLock(*AbilitySystemComponent);
+
+	for (const FGameplayAbilitySpec& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
+	{
+		if (!AbilitySpec.Ability || !AbilitySpec.IsActive() || !AbilitySpec.Ability->AbilityTags.HasTag(GameplayTag))
+		{
+			continue;
+		}
+
+		UGameplayAbility* AbilityCDO = CastChecked<UGameplayAbility>(AbilitySpec.Ability);
+		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+		{
+			// Cancel all the spawned instances, not the CDO.
+			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
+			{
+				if (AbilityInstance->CanBeCanceled())
+				{
+					AbilityInstance->CancelAbility(AbilitySpec.Handle, AbilitySystemComponent->AbilityActorInfo.Get(), AbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("TryCancelAbilitiesByTag: Can't cancel ability [%s] because CanBeCanceled is false."), *AbilityInstance->GetName());
+				}
+			}
+		}
+		else
+		{
+			// Non-instanced abilities can always be canceled.
+			check(AbilityCDO->CanBeCanceled());
+			AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilitySystemComponent->AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(), bReplicateCancelAbility);
+		}
+	}
+}

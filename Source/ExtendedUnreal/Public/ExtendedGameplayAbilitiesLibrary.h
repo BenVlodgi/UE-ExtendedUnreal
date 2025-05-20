@@ -58,4 +58,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ability", meta = (DisplayName = "Has Ability"))
 	static UPARAM(DisplayName = "HasAbility") bool HasAbility(const AActor* Actor, const TSubclassOf<UGameplayAbility>& Ability);
 
+	/** Sets the Ability Components AbilityActorInfo */
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	static bool SetAbilityActorInfo(UAbilitySystemComponent* AbilitySystemComponent, AActor* OwnerActor, AActor* AvatarActor);
+
+	/** 
+	 * Attempts to cancel every gameplay ability that matches the given tag.
+	 * If bReplicateCancelAbility is true, it will remotely cancel local/server abilities, if false it will only try to locally cancel abilities.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Abilities")
+	static void TryCancelAbilitiesByTag(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayTag GameplayTag, const bool bReplicateCancelAbility);
+
 };

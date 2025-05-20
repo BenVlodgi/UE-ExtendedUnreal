@@ -165,6 +165,8 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Gameplay Abilities** Library | Get SetByCaller Tag Magnitudes            | Runtime |
 | Extended **Gameplay Abilities** Library | Get SetByCaller Name Magnitudes           | Runtime |
 | Extended **Gameplay Abilities** Library | Get GameplayEffect Class SetByCaller Tag  | Runtime |
+| Extended **Gameplay Abilities** Library | Set Ability Actor Info                    | Runtime |
+| Extended **Gameplay Abilities** Library | Try Cancel Abilities By Tag               | Runtime |
 | Extended **Gameplay Tag** Library | Add GameplayTag Containers        | Runtime |
 | Extended **Gameplay Tag** Library | To String (GameplayTag)           | Runtime |
 | Extended **Gameplay Tag** Library | To Name (GameplayTag)             | Runtime |

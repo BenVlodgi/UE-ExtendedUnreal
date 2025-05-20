@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Structs/VectorArray.h"
 
 
 #include "ExtendedMathLibrary.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS(meta = (BlueprintThreadSafe))
 class EXTENDEDUNREAL_API UExtendedMathLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	/**
@@ -122,8 +121,36 @@ public:
 	static TArray<FVector> GetPointsInCircle(const FTransform& Transform, const double Radius, const int32 NumPoints);
 
 	static FVector ClosestPointOnBox(const FVector& Point, const FTransform& BoxTransform, const FVector& BoxExtents);
-
 	static FVector ClosestPointOnCapsule(const FVector& Point, const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight);
+
+	/**
+	 * Returns the closest point in a box to a given world-space point.
+	 *
+	 * @param BoxTransform		The transform of the box in world space.
+	 * @param BoxExtents		The extents of the box in local space.
+	 * @param Point				The point in world space to find the closest point to.
+	 * @param bClampToSurface	When true, the point will be clamped to the box's surface if it is inside.
+	 * @param bIsInside			True if the point iss inside the box, false if it is outside.
+	 * @param ClosestPoint		The closest point on the box to the given point.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Math|Geometry", meta = (KeyWords = "ClosestPointOnBox"))
+	void ClosestPointInBox(const FTransform& BoxTransform, const FVector& BoxExtents, const FVector& Point, bool bClampToSurface, bool& bIsInside, FVector& ClosestPoint);
+
+	/**
+	 * Returns the closest point in a vertical capsule to a given world-space point.
+	 *
+	 * @param CapsuleLocation	The location of the capsule in world space.
+	 * @param CapsuleRotation	The rotation of the capsule in world space.
+	 * @param CapsuleRadius	The radius of the capsule.
+	 * @param CapsuleHalfHeight	The half height of the capsule.
+	 * @param Point				The point in world space to find the closest point to.
+	 * @param bClampToSurface	When true, the point will be clamped to the capsule's surface if it is inside.
+	 * @param bIsInside			True if the point is inside the capsule, false if it is outside.
+	 * @param ClosestPoint		The closest point on the capsule to the given point.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Math|Geometry")
+	void ClosestPointInCapsule(const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight, const FVector& Point, const bool bClampToSurface, bool& bIsInside, FVector& ClosestPoint);
+
 
 	/** Returns true if the outer sphere fully encloses the inner sphere (using centers and radii). */
 	UFUNCTION(BlueprintPure, Category = "Math|Geometry")
@@ -172,7 +199,7 @@ public:
 
 	/**
 	 * Returns a random index based on the provided WeightedArray using a deterministic random stream.
-	 * 
+	 *
 	 * @param Stream		Random stream to use for deterministic randomness.
 	 * @param WeightedArray	Array of non-negative weights. Higher weight = higher chance of being selected. Zero and negative weights are ignored.
 	 * @return				The selected index based on the weight distribution, or INDEX_NONE if weights are invalid.

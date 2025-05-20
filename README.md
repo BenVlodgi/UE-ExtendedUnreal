@@ -143,8 +143,8 @@ Currently Compatible with Unreal Engine 5.3.
 | Extended **Math** Library | Get Points in Circle                   | Runtime |
 | Extended **Math** Library | Filter Split Path to Overlap Component | Runtime |
 | Extended **Math** Library | Get Points in Circle                   | Runtime |
-| Extended **Math** Library | Closest Point on Box                   | Runtime |
-| Extended **Math** Library | Closest Point on Capsule               | Runtime |
+| Extended **Math** Library | Closest Point in Box                   | Runtime |
+| Extended **Math** Library | Closest Point in Capsule               | Runtime |
 | Extended **Math** Library | Sphere Encloses Sphere                 | Runtime |
 | Extended **Math** Library | Angle Distance Degrees                 | Runtime |
 | Extended **Math** Library | Get Axis and Angle Between Rotators    | Runtime |

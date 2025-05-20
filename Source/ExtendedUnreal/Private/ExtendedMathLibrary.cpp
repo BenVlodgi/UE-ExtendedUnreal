@@ -122,6 +122,8 @@ FVector UExtendedMathLibrary::ClosestPointOnBox(const FVector& Point, const FTra
 
 FVector UExtendedMathLibrary::ClosestPointOnCapsule(const FVector& Point, const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight)
 {
+	// TODO: REVIEW THIS FUNCTION. It is using the forward vector for the capsule axis. It is being called externally. Need to ensure it is being used correctly.
+
 	// Compute the capsule's axis direction (forward vector from the rotation)
 	FVector CapsuleAxis = CapsuleRotation.Vector();
 
@@ -143,6 +145,58 @@ FVector UExtendedMathLibrary::ClosestPointOnCapsule(const FVector& Point, const 
 
 	// Return the closest point on the capsule's surface
 	return SegmentClosestPoint + ToPoint;
+}
+
+void UExtendedMathLibrary::ClosestPointInBox(const FTransform& BoxTransform, const FVector& BoxExtents, const FVector& Point, bool bClampToSurface, bool& bIsInside, FVector& ClosestPoint)
+{
+	// Transform the point into the box's local space
+	FVector LocalPoint = BoxTransform.InverseTransformPosition(Point);
+
+	// Check if point is inside the box
+	bIsInside =
+		FMath::Abs(LocalPoint.X) <= BoxExtents.X &&
+		FMath::Abs(LocalPoint.Y) <= BoxExtents.Y &&
+		FMath::Abs(LocalPoint.Z) <= BoxExtents.Z;
+
+	if (bIsInside && !bClampToSurface)
+	{
+		// It's inside and we don't want to clamp
+		ClosestPoint = Point;
+	}
+	else
+	{
+		// Clamp the local point within the box's bounds
+		const FVector ClampedPoint = LocalPoint.BoundToBox(-BoxExtents, BoxExtents);
+
+		// Transform the clamped point back to world space
+		ClosestPoint = BoxTransform.TransformPosition(ClampedPoint);
+	}
+}
+
+void UExtendedMathLibrary::ClosestPointInCapsule(const FVector& CapsuleLocation, const FRotator& CapsuleRotation, float CapsuleRadius, float CapsuleHalfHeight, const FVector& Point, const bool bClampToSurface, bool& bIsInside, FVector& ClosestPoint)
+{
+	const FVector CapsuleAxis = FRotationMatrix(CapsuleRotation).GetScaledAxis(EAxis::Z);
+	const FVector CapsuleBase = CapsuleLocation - CapsuleAxis * CapsuleHalfHeight;
+	const FVector CapsuleTip = CapsuleLocation + CapsuleAxis * CapsuleHalfHeight;
+
+	// Closest point on the capsule's central line segment
+	const FVector SegmentClosestPoint = FMath::ClosestPointOnSegment(Point, CapsuleBase, CapsuleTip);
+	const FVector Delta = Point - SegmentClosestPoint;
+	const float DistSqr = Delta.SizeSquared();
+
+	// Determine whether the point is inside the capsule
+	bIsInside = DistSqr <= FMath::Square(CapsuleRadius);
+
+	if (bIsInside || !bClampToSurface)
+	{
+		// Point is inside, or we don't want to clamp it
+		ClosestPoint = Point;
+	}
+	else
+	{
+		// Project to capsule surface
+		ClosestPoint = SegmentClosestPoint + Delta.GetSafeNormal() * CapsuleRadius;
+	}
 }
 
 

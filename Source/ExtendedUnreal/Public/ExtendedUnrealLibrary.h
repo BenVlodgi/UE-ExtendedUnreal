@@ -1,4 +1,4 @@
-// Copyright 2023 Dream Seed LLC.
+// Copyright 2025 Dream Seed LLC.
 
 #pragma once
 
@@ -8,6 +8,7 @@
 
 
 #include "ExtendedUnrealLibrary.generated.h"
+
 
 //UENUM()
 //enum class EDelayInput : uint8
@@ -23,13 +24,13 @@
 //	Cancelled,
 //};
 
-//UENUM()
-//enum class EQueryObjectMobility : uint8
-//{
-//	AllObjects = 3,
-//	AllStaticObjects = 1,
-//	AllDynamicObjects = 2,
-//};
+UENUM()
+enum class EQueryObjectMobility : uint8
+{
+	AllObjects = 3,
+	AllStaticObjects = 1,
+	AllDynamicObjects = 2,
+};
 
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FTransformUpdatedDelegate, USceneComponent*, Component, const FTransform&, NewTransform);
@@ -124,12 +125,12 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	/**
 	 * Get all Actors attached to the targe which are of the given class type.
 	 */
-	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", Class = "Actor", DeterminesOutputType = "Class", Category = "Actor", keywords = "find"))
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", Class = "/Script/Engine.Actor", DeterminesOutputType = "Class", Category = "Actor", keywords = "find"))
 	static UPARAM(DisplayName = "AttachedActors") TArray<AActor*> GetAttachedActorsOfClass(const AActor* Target, TSubclassOf<AActor> Class, bool bRecursivelyIncludeAttachedActors);
 
 	static void GetAttachedActorsOfClass_InternalAppend(const AActor* Target, TSubclassOf<AActor> Class, TArray<AActor*>& AttachedActors, bool bRecursivelyIncludeAttachedActors);
 
-	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", Class = "Actor", DeterminesOutputType = "Class", Category = "Actor", keywords = "find"))
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", Class = "/Script/Engine.Actor", DeterminesOutputType = "Class", Category = "Actor", keywords = "find"))
 	static UPARAM(DisplayName = "FirstAttachedActor") AActor* GetFirstAttachedActorOfClass(const AActor* Target, TSubclassOf<AActor> Class);
 
 	/**
@@ -233,22 +234,6 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
  	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Hash Combine Fast", BlueprintThreadSafe), Category = "Utilities")
 	static int32 ExtendedHashCombineFast(const int32 A, const int32 B);
-
-	UFUNCTION(BlueprintCallable, Category = "Rendering|Material")
-	static UPARAM(DisplayName = "Data") TArray<float> GetCustomPrimitiveData(const UPrimitiveComponent* Target);
-
-	UFUNCTION(BlueprintCallable, Category = "Rendering|Material")
-	static UPARAM(DisplayName = "Data") float GetCustomPrimitiveDataFloat(const UPrimitiveComponent* Target, int32 DataIndex);
-
-	/**
-	 * Copy parameter values from another material instance. This will copy only parameters explicitly overridden in that material instance!!
-	 * This will not clear away existing override parameters unless there is a new one to replace it.
-	 * 
-	 * @param	Target				Parameter-overrides copied to this material instance.
-	 * @param	MaterialInstance	Parameter-overrides copied from this material instance.
-	 */
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Copy Over Parameter Overrides"), Category = "Rendering|Material")
-	static void CopyOverParameterOverrides(UMaterialInstanceDynamic* Target, const UMaterialInstance* MaterialInstance);
 
 	/** Checks if this class implements a specific interface, works for both native and blueprint interfaces. */
 	UFUNCTION(BlueprintPure, Category = "Utilities")
@@ -383,6 +368,12 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintPure, Category = "Component", meta = (Keywords = "within"))
 	static UPARAM(DisplayName = "PointIsInside") bool IsPointInsideBox(const class UBoxComponent* Box, const FVector& Point);
 
+	UFUNCTION(BlueprintPure, Category = "Components|Capsule")
+	static UPARAM(DisplayName = "TopLocation") FVector GetCapsuleTopLocation(const UCapsuleComponent* Capsule);
+
+	UFUNCTION(BlueprintPure, Category = "Components|Capsule")
+	static UPARAM(DisplayName = "BottomLocation") FVector GetCapsuleBottomLocation(const UCapsuleComponent* Capsule);
+
 	/**
 	 * Get Object which implement the interface. Checks the actor and its components.
 	 * Returns the first object it finds.
@@ -411,6 +402,9 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable, Category = "Components|Timeline", meta = (DisplayName = "Set Duration", Duration = "1.0"))
 	static void SetTimelineDuration(class UTimelineComponent* Timeline, double Duration);
+
+	UFUNCTION(BlueprintPure, Category = "Components|Timeline", meta = (DisplayName = "Get Duration", ReturnDisplayName = "Duration"))
+	static double GetTimelineDuration(class UTimelineComponent* Timeline);
 
 	/**  **/
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "IsInWater (MovementComponent)"), Category = "Components|Movement")
@@ -451,18 +445,6 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	static void EditorRequestPlaySession(bool bSimulate);
 
 	/**
-	 * Creates a new render target cube and initializes it to the specified dimensions.
-	 */
-	UFUNCTION(BlueprintCallable, Category="Rendering", meta=(WorldContext="WorldContextObject"))
-	static UTextureRenderTargetCube* CreateRenderTargetCube(UObject* WorldContextObject, int32 Width = 256, FLinearColor ClearColor = FLinearColor::Green, bool bAutoGenerateMipMaps = false, bool bSupportUAVs = false, bool bHDR = true, bool bForceLinearGamma = true);
-
-	/**
-	 * Clears the specified render target cube with the given ClearColor.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Rendering", meta = (Keywords = "ClearRenderTarget", WorldContext = "WorldContextObject", UnsafeDuringActorConstruction = "true"))
-	static void ClearRenderTargetCube(UObject* WorldContextObject, UTextureRenderTargetCube* TextureRenderTargetCube, FLinearColor ClearColor);
-
-	/**
 	 * Marks the transform as dirty - will be sent to the render thread at the end of the frame.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Component")
@@ -490,6 +472,38 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable)
 	static TArray<FVector> FlipVectors(const TArray<FVector>& Vectors);
+
+
+	/**
+	 * Returns an array of actors that overlap the given oriented box.
+	 * @param WorldContext		World context
+	 * @param BoxPos			Center of box.
+	 * @param BoxExtent			Extents of box.
+	 * @param BoxRotation		Orientation of box in world.
+	 * @param Filter			Option to restrict results to only static or only dynamic.  For efficiency.
+	 * @param ClassFilter		If set, will only return results of this class or subclasses of it.
+	 * @param ActorsToIgnore	Ignore these actors in the list
+	 * @param OutActors			Returned array of actors. Unsorted.
+	 * @return					true if there was an overlap that passed the filters, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Collision", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore", DisplayName = "Oriented Box Overlap Actors", DeterminesOutputType = "ActorClassFilter", DynamicOutputParam = "OutActors"))
+	static bool OrientedBoxOverlapActors(const UObject* WorldContextObject, const FVector BoxPos, const FVector BoxExtent, const FRotator BoxRotation, const TArray<TEnumAsByte<EObjectTypeQuery>>& ObjectTypes, TSubclassOf<AActor> ActorClassFilter, const TArray<AActor*>& ActorsToIgnore, TArray<AActor*>& OutActors
+	);
+
+	/**
+	 * Returns an array of components that overlap the given axis-aligned box.
+	 * @param WorldContext		World context
+	 * @param BoxPos			Center of box.
+	 * @param BoxExtent			Extents of box.
+	 * @param BoxRotation		Orientation of box in world.
+	 * @param Filter			Option to restrict results to only static or only dynamic.  For efficiency.
+	 * @param ClassFilter		If set, will only return results of this class or subclasses of it.
+	 * @param ActorsToIgnore		Ignore these actors in the list
+	 * @param OutActors			Returned array of actors. Unsorted.
+	 * @return					true if there was an overlap that passed the filters, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Collision", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore", DisplayName = "Oriented Box Overlap Components", DeterminesOutputType = "ComponentClassFilter", DynamicOutputParam = "OutComponents"))
+	static bool OrientedBoxOverlapComponents(const UObject* WorldContextObject, const FVector BoxPos, const FVector BoxExtent, const FRotator BoxRotation, const TArray<TEnumAsByte<EObjectTypeQuery>>& ObjectTypes, TSubclassOf<UActorComponent> ComponentClassFilter, const TArray<AActor*>& ActorsToIgnore, TArray<UPrimitiveComponent*>& OutComponents);
 
 	/**
 	* Returns true if the sphere overlaps the collision of the component.
@@ -541,5 +555,72 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	/** Get Character Arrow Component **/
 	UFUNCTION(BlueprintPure, meta = (DefaultToSelf = "Target", DevelopmentOnly), Category = "Character")
 	static class UArrowComponent* GetCharacterArrow(ACharacter* Target);
+
+	/**
+	 * Sets the component sprite
+	 * Issue: Does not hide the existing root sprite.
+	**/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", DevelopmentOnly), Category = "Actor")
+	static void SetComponentSprite(USceneComponent* SceneComponent, UTexture2D* SpriteTexture);
+
+	/**
+	 * Sets the component sprite
+	 * Issue: Does not hide the existing sprite.
+	**/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", DevelopmentOnly), Category = "Actor")
+	static UBillboardComponent* SetActorRootSprite(AActor* Target, UTexture2D* SpriteTexture);
+
+	/** Transient Objects are not saved. **/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target"), Category = "Object")
+	static void SetTransient(UObject* Target, const bool bTransient = true);
+
+	/** Transient Objects are not saved. **/
+	UFUNCTION(BlueprintPure, meta = (DefaultToSelf = "Target"), Category = "Object")
+	static bool GetTransient(const UObject* Target);
+
+	/** Set whether this actor is editor-only. Use with care, as if this actor is referenced by anything else that reference will be NULL in cooked builds. **/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target"), Category = "Object")
+	static void SetEditorOnlyActor(AActor* Target, const bool bIsEditorOnlyActor = true);
+
+	/** Get whether this actor is editor-only. Use with care, as if this actor is referenced by anything else that reference will be NULL in cooked builds. **/
+	UFUNCTION(BlueprintPure, meta = (DefaultToSelf = "Target"), Category = "Object")
+	static bool IsEditorOnlyActor(const AActor* Target);
+
+	/** 
+	 * Sets character's jump velocity based on the desired JumpHeight.
+	 * Gravity is accounted for, giving the character a consistent jump apex.
+	 * If Gravity is zero, then JumpZVelocity will not be changed.
+	 * 
+	 * @param CharacterMovement Character Movement Component.
+	 * @param JumpHeight How high the character will move vertically.
+	 * @return True if Gravity is non-zero. JumpZVelocity remains unchanged.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "CharacterMovement")
+	static bool SetJumpHeight(class UCharacterMovementComponent* CharacterMovement, const float JumpHeight);
+
+	//UFUNCTION(BlueprintCallable, Category = "Spline")
+	//static void SetSplineComponentPointInterpMode(class USplineComponent* SplineComponent, int32 PointIndex, TEnumAsByte<EInterpCurveMode> Mode, bool bUpdateSpline);
+
+
+	/** 
+	 * Calculates Character origin location which would put the character's base at the given BaseLocation.
+	 **/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", keywords = "feet, convert"), Category = "Character")
+	static FVector GetCharacterOriginFromBaseLocation(ACharacter* Target, const FVector BaseLocation);
+
+	/** 
+	 * Gets location at the base of the character capsule.
+	 **/
+	UFUNCTION(BlueprintPure, meta = (DefaultToSelf = "Target", keywords = "feet, convert"), Category = "Character")
+	static UPARAM(DisplayName = "BaseLocation") FVector GetCharacterBaseLocation(const ACharacter* Target);
+
+	/**
+	 * Finds all actors in the world with the given GUIDs.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (WorldContext = "WorldContextObject", DefaultToSelf = "WorldContextObject", HidePin = "WorldContextObject", DevelopmentOnly))
+	static TArray<AActor*> FindActorsByFileNames(const UObject* WorldContextObject, const TArray<FString>& FileNames);
+
+	UFUNCTION(BlueprintCallable, Category = "Components|ProceduralMesh", meta = (DisplayName = "Set UseComplexAsSimpleCollision (ProceduralMeshComponent)"))
+	static void ProceduralMesh_SetUseComplexAsSimpleCollision(class UProceduralMeshComponent* Target, bool bUseComplexAsSimpleCollision = true);
 
 };

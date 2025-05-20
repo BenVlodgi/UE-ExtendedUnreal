@@ -26,6 +26,7 @@ public class ExtendedUnreal : ModuleRules
             "ControlRig", // For RigUnit_SphereTraceByTraceProfile
             "RigVM", // For RigUnit_SphereTraceByTraceProfile
             "PhysicsControl", // For ExtendedPhysicsControl
+            "ProceduralMeshComponent", // For UExtendedUnrealLibrary::ProceduralMesh_SetUseComplexAsSimpleCollision
         });
 			
 		

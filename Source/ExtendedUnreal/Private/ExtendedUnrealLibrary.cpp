@@ -1,4 +1,4 @@
-// Copyright 2023 Dream Seed LLC.
+// Copyright 2025 Dream Seed LLC.
 
 #include "ExtendedUnrealLibrary.h"
 
@@ -6,6 +6,7 @@
 #include "ExtendedUnrealModule.h"
 #include "ExtendedMathLibrary.h"
 #include "Structs/DelegateHandleWrapper.h"
+#include "Structs/VectorArray.h"
 
 #if WITH_EDITOR
 #include "UnrealEdGlobals.h"
@@ -15,28 +16,31 @@
 #endif
 
 #include "UObject/NameTypes.h"
+#include "UObject/ICookInfo.h"
 #include "CoreMinimal.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "PhysicsEngine/ConvexElem.h"
+#include "ProceduralMeshComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/MovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Styling/SlateIconFinder.h"
 #include "Components/AudioComponent.h"
+#include "Components/BillboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/TimelineComponent.h"
 #include "DelayAction.h"
-#include "RuntimeErrors.h"
-#include "Engine/TextureRenderTargetCube.h"
-#include "TextureResource.h"
 #include "ClearQuad.h"
 #include "RHIContext.h"
 #include "RHIUtilities.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/OverlapResult.h"
+#include "EngineUtils.h"
 
 
 UExtendedUnrealLibrary::UExtendedUnrealLibrary(const FObjectInitializer& ObjectInitializer)
@@ -379,53 +383,6 @@ int32 UExtendedUnrealLibrary::ExtendedHashCombineFast(int32 A, int32 B)
 	return HashCombineFast(A, B);;
 }
 
-TArray<float> UExtendedUnrealLibrary::GetCustomPrimitiveData(const UPrimitiveComponent* Target)
-{
-	if (IsValid(Target))
-	{
-		const FCustomPrimitiveData& PrimitiveData = Target->GetCustomPrimitiveData();
-		return PrimitiveData.Data;
-	}
-
-	return TArray<float>();
-}
-
-float UExtendedUnrealLibrary::GetCustomPrimitiveDataFloat(const UPrimitiveComponent* Target, int32 DataIndex)
-{
-	if (IsValid(Target))
-	{
-		const FCustomPrimitiveData& PrimitiveData = Target->GetCustomPrimitiveData();
-		if (PrimitiveData.Data.IsValidIndex(DataIndex))
-		{
-			return PrimitiveData.Data[DataIndex];
-		}
-	}
-
-	return 0.0;
-}
-
-void UExtendedUnrealLibrary::CopyOverParameterOverrides(UMaterialInstanceDynamic* Target, const UMaterialInstance* MaterialInstance)
-{
-	LLM_SCOPE(ELLMTag::MaterialInstance);
-
-	if (!ensureAsRuntimeWarning(Target != nullptr && MaterialInstance != nullptr))
-	{
-		return;
-	}
-
-	for (const auto& Parameter : MaterialInstance->VectorParameterValues) Target->SetVectorParameterValueByInfo(Parameter.ParameterInfo, Parameter.ParameterValue);
-	for (const auto& Parameter : MaterialInstance->DoubleVectorParameterValues) Target->SetDoubleVectorParameterValue(Parameter.ParameterInfo.Name, Parameter.ParameterValue);
-	for (const auto& Parameter : MaterialInstance->ScalarParameterValues) Target->SetScalarParameterValueByInfo(Parameter.ParameterInfo, Parameter.ParameterValue);
-	for (const auto& Parameter : MaterialInstance->TextureParameterValues) Target->SetTextureParameterValueByInfo(Parameter.ParameterInfo, Parameter.ParameterValue);
-	for (const auto& Parameter : MaterialInstance->FontParameterValues) Target->SetFontParameterValue(Parameter.ParameterInfo.Name, Parameter.FontValue, Parameter.FontPage);
-
-#if WITH_EDITOR
-	FObjectCacheEventSink::NotifyReferencedTextureChanged_Concurrent(Target);
-#endif
-
-	////Target->InitResources();
-}
-
 bool UExtendedUnrealLibrary::DoesClassImplementInterface(const UClass* Class, const TSubclassOf<UInterface> Interface)
 {
 	if (Interface != NULL && Class != NULL)
@@ -757,6 +714,26 @@ UPARAM(DisplayName = "PointIsInside") bool UExtendedUnrealLibrary::IsPointInside
 			LocalPoint.Z >= -BoxExtent.Z && LocalPoint.Z <= BoxExtent.Z);
 }
 
+FVector UExtendedUnrealLibrary::GetCapsuleTopLocation(const UCapsuleComponent* Capsule)
+{
+	if (!IsValid(Capsule))
+	{
+		return FVector::ZeroVector;
+	}
+
+	return Capsule->GetComponentTransform().TransformPosition(FVector(0,0, Capsule->GetUnscaledCapsuleHalfHeight()));
+}
+
+FVector UExtendedUnrealLibrary::GetCapsuleBottomLocation(const UCapsuleComponent* Capsule)
+{
+	if (!IsValid(Capsule))
+	{
+		return FVector::ZeroVector;
+	}
+
+	return Capsule->GetComponentTransform().TransformPosition(FVector(0, 0, 0 - Capsule->GetUnscaledCapsuleHalfHeight()));
+}
+
 
 void UExtendedUnrealLibrary::GetInterfaceImplementor(AActor* Actor, TSubclassOf<UInterface> Interface, const bool bPreferComponent, UObject*& Implementor)
 {
@@ -846,6 +823,11 @@ void UExtendedUnrealLibrary::SetTimelineDuration(UTimelineComponent* Timeline, d
 	{
 		Timeline->SetPlayRate(Timeline->GetTimelineLength() / FMath::Max(0.001, Duration));
 	}
+}
+
+double UExtendedUnrealLibrary::GetTimelineDuration(UTimelineComponent* Timeline)
+{
+	return IsValid(Timeline) ? Timeline->GetTimelineLength() * Timeline->GetPlayRate() : 0.0;
 }
 
 bool UExtendedUnrealLibrary::MovementComponent_IsInWater(UMovementComponent* MovementComponent)
@@ -995,54 +977,6 @@ void UExtendedUnrealLibrary::EditorRequestPlaySession(bool bSimulate)
 //	}
 //}
 
-
-UTextureRenderTargetCube* UExtendedUnrealLibrary::CreateRenderTargetCube(UObject* WorldContextObject, int32 Width, FLinearColor ClearColor, bool bAutoGenerateMipMaps, bool bSupportUAVs, bool bHDR, bool bForceLinearGamma)
-{
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-
-	if (Width > 0 && World)
-	{
-		UTextureRenderTargetCube* NewRenderTargetCube = NewObject<UTextureRenderTargetCube>(WorldContextObject);
-		check(NewRenderTargetCube);
-		//NewRenderTargetCube->RenderTargetFormat = Format;
-		NewRenderTargetCube->ClearColor = ClearColor;
-		//NewRenderTargetCube->bAutoGenerateMips = bAutoGenerateMipMaps;
-		NewRenderTargetCube->bCanCreateUAV = bSupportUAVs;
-		NewRenderTargetCube->InitAutoFormat(Width);
-		NewRenderTargetCube->UpdateResourceImmediate(true);
-		NewRenderTargetCube->bHDR = true;
-		////NewRenderTargetCube->OverrideFormat = PF_Unknown;
-		NewRenderTargetCube->bForceLinearGamma = true;
-
-		return NewRenderTargetCube;
-	}
-
-	return nullptr;
-}
-
-void UExtendedUnrealLibrary::ClearRenderTargetCube(UObject* WorldContextObject, UTextureRenderTargetCube* TextureRenderTargetCube, FLinearColor ClearColor)
-{
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-
-	if (TextureRenderTargetCube
-		&& TextureRenderTargetCube->GetResource()
-		&& World)
-	{
-		////FTextureRenderTargetResource* RenderTargetResource = TextureRenderTargetCube->GameThread_GetRenderTargetResource();
-		////ENQUEUE_RENDER_COMMAND(ClearRTCommand)(
-		////	[RenderTargetResource, ClearColor](FRHICommandList& RHICmdList)
-		////	{
-		////		FRHIRenderPassInfo RPInfo(RenderTargetResource->GetRenderTargetTexture(), ERenderTargetActions::DontLoad_Store);
-		////		RHICmdList.Transition(FRHITransitionInfo(RenderTargetResource->GetRenderTargetTexture(), ERHIAccess::Unknown, ERHIAccess::RTV));
-		////		RHICmdList.BeginRenderPass(RPInfo, TEXT("ClearRT"));
-		////		DrawClearQuad(RHICmdList, ClearColor);
-		////		RHICmdList.EndRenderPass();
-		////		
-		////		RHICmdList.Transition(FRHITransitionInfo(RenderTargetResource->GetRenderTargetTexture(), ERHIAccess::RTV, ERHIAccess::SRVMask));
-		////	});
-	}
-}
-
 void UExtendedUnrealLibrary::MarkRenderTransformDirty(UActorComponent* Component)
 {
 	if (IsValid(Component))
@@ -1089,6 +1023,64 @@ TArray<FVector> UExtendedUnrealLibrary::FlipVectors(const TArray<FVector>& Vecto
 		}
 	}
 	return OutVectors;
+}
+
+bool UExtendedUnrealLibrary::OrientedBoxOverlapActors(const UObject* WorldContextObject, const FVector BoxPos, const FVector BoxExtent, const FRotator BoxRotation, const TArray<TEnumAsByte<EObjectTypeQuery>>& ObjectTypes, TSubclassOf<AActor> ActorClassFilter, const TArray<AActor*>& ActorsToIgnore, TArray<AActor*>& OutActors)
+{
+	OutActors.Empty();
+
+	TArray<UPrimitiveComponent*> OverlapComponents;
+	bool bOverlapped = OrientedBoxOverlapComponents(WorldContextObject, BoxPos, BoxExtent, BoxRotation, ObjectTypes, nullptr, ActorsToIgnore, OverlapComponents);
+	if (bOverlapped)
+	{
+		UKismetSystemLibrary::GetActorListFromComponentList(OverlapComponents, ActorClassFilter, OutActors);
+	}
+
+	return (OutActors.Num() > 0);
+}
+
+bool UExtendedUnrealLibrary::OrientedBoxOverlapComponents(const UObject* WorldContextObject, const FVector BoxPos, const FVector BoxExtent, const FRotator BoxRotation, const TArray<TEnumAsByte<EObjectTypeQuery>>& ObjectTypes, TSubclassOf<UActorComponent> ComponentClassFilter, const TArray<AActor*>& ActorsToIgnore, TArray<UPrimitiveComponent*>& OutComponents)
+{
+	OutComponents.Empty();
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(OrientedBoxOverlapComponents), false);
+	Params.AddIgnoredActors(ActorsToIgnore);
+
+	TArray<FOverlapResult> Overlaps;
+
+	FCollisionObjectQueryParams ObjectParams;
+	for (auto Iter = ObjectTypes.CreateConstIterator(); Iter; ++Iter)
+	{
+		const ECollisionChannel& Channel = UCollisionProfile::Get()->ConvertToCollisionChannel(false, *Iter);
+		ObjectParams.AddObjectTypesToQuery(Channel);
+	}
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (World != nullptr)
+	{
+		const FQuat BoxQuat = BoxRotation.Quaternion();
+		World->OverlapMultiByObjectType(
+			Overlaps,
+			BoxPos,
+			BoxQuat,
+			ObjectParams,
+			FCollisionShape::MakeBox(BoxExtent),
+			Params
+		);
+	}
+
+	for (const FOverlapResult& O : Overlaps)
+	{
+		if (O.Component.IsValid())
+		{
+			if (!ComponentClassFilter || O.Component.Get()->IsA(ComponentClassFilter))
+			{
+				OutComponents.Add(O.Component.Get());
+			}
+		}
+	}
+
+	return (OutComponents.Num() > 0);
 }
 
 bool UExtendedUnrealLibrary::SphereOverlapComponentCollision(const UPrimitiveComponent* Component, const FVector& Point, const float Radius, FName BoneName, FVector& OutPointOnBody, float& Distance)
@@ -1191,6 +1183,8 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 	for (const FKSphylElem& SphylElem : BodySetup->AggGeom.SphylElems)
 	{
 		FTransform SphylTransform = BodyTransform * FTransform(SphylElem.Rotation, SphylElem.Center);
+
+		// TODO: REVIEW THIS FUNCTION. It is using the forward vector for the capsule axis. Need to ensure it is being used correctly. Ideally, the upvector would be the capsule axis.
 		FVector LocalClosestPoint = UExtendedMathLibrary::ClosestPointOnCapsule(Point, SphylTransform.GetLocation(), SphylTransform.GetRotation().Rotator(), SphylElem.Radius, SphylElem.Length * 0.5f);
 		double DistanceSq = FVector::DistSquared(Point, LocalClosestPoint);
 
@@ -1306,4 +1300,290 @@ UArrowComponent* UExtendedUnrealLibrary::GetCharacterArrow(ACharacter* Target)
 	}
 #endif //WITH_EDITORONLY_DATA
 	return nullptr;
+}
+
+void UExtendedUnrealLibrary::SetComponentSprite(USceneComponent* SceneComponent, UTexture2D* SpriteTexture)
+{
+#if WITH_EDITORONLY_DATA
+	if (IsValid(SceneComponent))
+	{
+		// Hide scene component's current visual if we are setting our own.
+		SceneComponent->bVisualizeComponent = !IsValid(SpriteTexture);
+
+		// TODO: Get a tagged component?
+		const bool bRegister = true;
+
+		// Only spawn a sprite if we have a valid texture to show.
+		if (!IsValid(SpriteTexture))
+		{
+			return;
+		}
+
+		// Don't spawn a component if there isn't an owner, or if this is the game world.
+		if (!IsValid(SceneComponent->GetOwner()) || SceneComponent->GetWorld()->IsGameWorld())
+		{
+			return;
+		}
+
+		TObjectPtr<UBillboardComponent> SpriteComponent = nullptr;
+		// Create a new billboard component to serve as a visualization of the actor until there is another primitive component
+		{
+			FCookLoadScope EditorOnlyLoadScope(ECookLoadType::EditorOnly);
+			SpriteComponent = NewObject<UBillboardComponent>(SceneComponent->GetOwner(), NAME_None, RF_Transactional | RF_Transient | RF_TextExportTransient);
+		}
+
+		SpriteComponent->Sprite = SpriteTexture;
+		SpriteComponent->SetRelativeScale3D_Direct(FVector(0.5f, 0.5f, 0.5f));
+		SpriteComponent->Mobility = EComponentMobility::Movable;
+		SpriteComponent->AlwaysLoadOnClient = false;
+		SpriteComponent->SetIsVisualizationComponent(true);
+		SpriteComponent->SpriteInfo.Category = TEXT("Misc");
+		SpriteComponent->SpriteInfo.DisplayName = NSLOCTEXT("SpriteCategory", "Misc", "Misc");
+		SpriteComponent->CreationMethod = SceneComponent->CreationMethod;
+		SpriteComponent->bIsScreenSizeScaled = true;
+		SpriteComponent->bUseInEditorScaling = true;
+		SpriteComponent->OpacityMaskRefVal = .3f;
+
+		SpriteComponent->SetupAttachment(SceneComponent);
+
+		if (bRegister)
+		{
+			SpriteComponent->RegisterComponent();
+		}
+	}
+#endif //WITH_EDITORONLY_DATA
+}
+
+UBillboardComponent* UExtendedUnrealLibrary::SetActorRootSprite(AActor* Target, UTexture2D* SpriteTexture)
+{
+#if WITH_EDITORONLY_DATA
+	if (IsValid(Target) && Target->HasValidRootComponent())
+	{
+		USceneComponent* SceneComponent = Target->GetRootComponent();
+
+		// Hide scene component's current visual if we are setting our own.
+		SceneComponent->bVisualizeComponent = false; // !IsValid(SpriteTexture);
+
+		// TODO: Get a tagged component?
+		const bool bRegister = true;
+
+		// Only spawn a sprite if we have a valid texture to show.
+		if (!IsValid(SpriteTexture))
+		{
+			return nullptr;
+		}
+
+		// Don't spawn a component if there isn't an owner, or if this is the game world.
+		if (Target->GetWorld()->IsGameWorld())
+		{
+			return nullptr;
+		}
+
+		TObjectPtr<UBillboardComponent> SpriteComponent = nullptr;
+		// Create a new billboard component to serve as a visualization of the actor until there is another primitive component
+		{
+			FCookLoadScope EditorOnlyLoadScope(ECookLoadType::EditorOnly);
+			SpriteComponent = NewObject<UBillboardComponent>(Target, NAME_None, RF_Transactional | RF_Transient | RF_TextExportTransient);
+		}
+
+		SpriteComponent->Sprite = SpriteTexture;
+		SpriteComponent->SetRelativeScale3D_Direct(FVector(0.5f, 0.5f, 0.5f));
+		SpriteComponent->Mobility = EComponentMobility::Movable;
+		SpriteComponent->AlwaysLoadOnClient = false;
+		SpriteComponent->SetIsVisualizationComponent(true);
+		SpriteComponent->SpriteInfo.Category = TEXT("Misc");
+		SpriteComponent->SpriteInfo.DisplayName = NSLOCTEXT("SpriteCategory", "Misc", "Misc");
+		SpriteComponent->CreationMethod = SceneComponent->CreationMethod;
+		SpriteComponent->bIsScreenSizeScaled = true;
+		SpriteComponent->bUseInEditorScaling = true;
+		SpriteComponent->OpacityMaskRefVal = .3f;
+
+		SpriteComponent->SetupAttachment(SceneComponent);
+
+		if (bRegister)
+		{
+			SpriteComponent->RegisterComponent();
+		}
+		return SpriteComponent;
+	}
+#endif //WITH_EDITORONLY_DATA
+	return nullptr;
+}
+
+void UExtendedUnrealLibrary::SetTransient(UObject* Target, const bool bTransient)
+{
+	if (IsValid(Target))
+	{
+		if (bTransient)
+		{
+			Target->SetFlags(RF_Transient);
+		}
+		else
+		{
+			Target->ClearFlags(RF_Transient);
+		}
+	}
+}
+
+bool UExtendedUnrealLibrary::GetTransient(const UObject* Target)
+{
+	if (IsValid(Target))
+	{
+		return Target->HasAllFlags(RF_Transient);
+	}
+	return false;
+}
+
+void UExtendedUnrealLibrary::SetEditorOnlyActor(AActor* Target, const bool bIsEditorOnlyActor)
+{
+	if (IsValid(Target))
+	{
+		Target->bIsEditorOnlyActor = bIsEditorOnlyActor;
+	}
+}
+
+bool UExtendedUnrealLibrary::IsEditorOnlyActor(const AActor* Target)
+{
+	if (IsValid(Target))
+	{
+		return Target->bIsEditorOnlyActor;
+	}
+	return false;
+}
+
+bool UExtendedUnrealLibrary::SetJumpHeight(UCharacterMovementComponent* CharacterMovement, const float JumpHeight)
+{
+	if (CharacterMovement)
+	{
+		return false;
+	}
+
+	// Use the Character's personal Gravity by default.
+	float Gravity = CharacterMovement->GetGravityZ();
+
+	// With Zero Gravity, the character will not fall back down.
+	if (FMath::IsNearlyZero(Gravity))
+	{
+		return false;
+
+		/*
+		// Fallback to the world's current gravity
+		Gravity = GetWorld()->GetGravityZ();
+		if (FMath::IsNearlyZero(Gravity))
+		{
+			// Fallback to the game's default gravity
+			Gravity = GetWorld()->GetDefaultGravityZ();
+			if (FMath::IsNearlyZero(Gravity))
+			{
+				// With Zero Gravity, the character will not fall back down.
+				return false;
+			}
+		}
+		*/
+	}
+
+	// Jump Height is relative to the current gravity. Gravity cannot be zero. 
+	CharacterMovement->JumpZVelocity = -1 * Gravity * FMath::Sqrt(2 * JumpHeight / Gravity);
+
+	return true;
+}
+
+//void UExtendedUnrealLibrary::SetSplineComponentPointInterpMode(USplineComponent* SplineComponent, int32 PointIndex, TEnumAsByte<EInterpCurveMode> Mode, bool bUpdateSpline)
+//{
+//	if (!IsValid(SplineComponent))
+//	{
+//		return;
+//	}
+//
+//	const int32 NumPoints = SplineComponent->SplineCurves.Position.Points.Num();
+//	if ((PointIndex >= 0) && (PointIndex < NumPoints))
+//	{
+//		SplineComponent->SplineCurves.Position.Points[PointIndex].InterpMode = CIM_CurveUser;
+//
+//		if (bUpdateSpline)
+//		{
+//			SplineComponent->UpdateSpline();
+//		}
+//	}
+//}
+
+FVector UExtendedUnrealLibrary::GetCharacterOriginFromBaseLocation(ACharacter* Target, const FVector BaseLocation)
+{
+	if (!IsValid(Target))
+	{
+		return FVector::ZeroVector;
+	}
+
+	const FVector WorldOffset = BaseLocation - GetCharacterBaseLocation(Target);
+	return Target->GetActorLocation() + WorldOffset;
+}
+
+FVector UExtendedUnrealLibrary::GetCharacterBaseLocation(const ACharacter* Target)
+{
+	if (!IsValid(Target))
+	{
+		return FVector::ZeroVector;
+	}
+
+	const UCapsuleComponent* Capsule = Target->GetCapsuleComponent();
+	if (!IsValid(Capsule))
+	{
+		return Target->GetActorLocation();
+	}
+
+	const float HalfHeight = Capsule->GetUnscaledCapsuleHalfHeight();
+	return Capsule->GetComponentTransform().TransformPosition(FVector(0, 0, -HalfHeight));
+}
+
+
+
+TArray<AActor*> UExtendedUnrealLibrary::FindActorsByFileNames(const UObject* WorldContextObject, const TArray<FString>& FileNames)
+{
+    TArray<AActor*> Result;
+
+    UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+    if (!World || FileNames.Num() == 0)
+    {
+        return Result;
+    }
+
+    // O(1) lookup
+    TSet<FString> FileNamesSet(FileNames);
+
+    for (TActorIterator<AActor> It(World); It; ++It)
+    {
+        AActor* Actor = *It;
+        if (!IsValid(Actor))
+		{
+			continue;
+		}
+
+		UPackage* ActorPackage = Actor->GetExternalPackage();
+		if (!IsValid(ActorPackage))
+		{
+			continue;
+		}
+
+		const FString ExternalActorShortName = FPaths::GetBaseFilename(ActorPackage->GetName());
+
+		if (FileNamesSet.Contains(ExternalActorShortName))
+		{
+			Result.AddUnique(Actor);
+
+			if (FileNamesSet.Num() == Result.Num())
+			{
+				break;
+			}
+		}
+    }
+
+    return Result;
+}
+
+void UExtendedUnrealLibrary::ProceduralMesh_SetUseComplexAsSimpleCollision(UProceduralMeshComponent* Target, bool bUseComplexAsSimpleCollision)
+{
+	if (IsValid(Target))
+	{
+		Target->bUseComplexAsSimpleCollision = bUseComplexAsSimpleCollision;
+	}
 }

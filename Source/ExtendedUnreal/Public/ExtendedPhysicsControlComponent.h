@@ -15,7 +15,7 @@ class EXTENDEDUNREAL_API UExtendedPhysicsControlComponent : public UPhysicsContr
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PhysicsControl")
 	void ToggleControlZAxisForce(FName Name);
 	
 };

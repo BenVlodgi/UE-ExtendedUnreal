@@ -122,6 +122,8 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **Array** Library | To Set                     | Runtime |
 | Extended **Array** Library | Filter Array for Interface | Runtime |
 | Extended **Array** Library | Resolve                    | Runtime |
+| Extended **Array** Library | Sort String Array in Place | Runtime |
+| Extended **Array** Library | Sort Name Array in Place   | Runtime |
 | Extended **Set** Library   | Add Set             | Runtime |
 | Extended **Set** Library   | Cast Set            | Runtime |
 | Extended **Map** Library   | Find Keys by Value  | Runtime |

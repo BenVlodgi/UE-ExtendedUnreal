@@ -137,7 +137,7 @@ public:
 	 * @param		A		Array
 	 * @param		Result	Resolved array
 	 */
-	UFUNCTION(BlueprintCallable, CustomThunk, meta = (DisplayName = "Resolve Array", CompactNodeTitle = "RESOLVE", ArrayParm = "A,Result"), Category = "Utilities|Array")
+	UFUNCTION(BlueprintCallable, CustomThunk, meta = (DisplayName = "Resolve Array", CompactNodeTitle = "RESOLVE", ArrayParm = "A,Result", ArrayTypeDependentParams = "Result"), Category = "Utilities|Array")
 	static void Array_Resolve(const TArray<int32>& A, TArray<int32>& Result);
 
 	DECLARE_FUNCTION(execArray_Resolve)
@@ -213,9 +213,19 @@ public:
 
 
 
+	//static void GenericArray_Diff(const void* TargetArray, const FArrayProperty* ArrayProperty, const void* OtherArray, const FArrayProperty* OtherArrayProperty, void* AddedArray, FArrayProperty* AddedArrayProperty, void* RemovedArray, FArrayProperty* RemovedArrayProperty);
 
 
 
-	static void GenericArray_Diff(const void* TargetArray, const FArrayProperty* ArrayProperty, const void* OtherArray, const FArrayProperty* OtherArrayProperty, void* AddedArray, FArrayProperty* AddedArrayProperty, void* RemovedArray, FArrayProperty* RemovedArrayProperty);
+
+
+	/** **/
+	UFUNCTION(BlueprintCallable, Category = "Sort")
+	static void SortStringArrayInPlace(TArray<FString>& Strings, const bool Reversed, const bool bGroupNumbers);
+
+	/** **/
+	UFUNCTION(BlueprintCallable, Category = "Sort")
+	static void SortNameArrayInPlace(TArray<FName>& Names, const bool Reversed, const bool bGroupNumbers);
+
 
 };

@@ -3,6 +3,7 @@
 
 #include "ExtendedArrayLibrary.h"
 #include "Kismet/BlueprintSetLibrary.h"
+//#include "Containers/Array.h"
 
 
 
@@ -209,16 +210,82 @@ void UExtendedArrayLibrary::GenericArray_Resolve(const void* TargetArrayAddress,
 	}
 }
 
-void UExtendedArrayLibrary::GenericArray_Diff(const void* TargetArray, const FArrayProperty* ArrayProperty, const void* OtherArray, const FArrayProperty* OtherArrayProperty, void* AddedArray, FArrayProperty* AddedArrayProperty, void* RemovedArray, FArrayProperty* RemovedArrayProperty)
+//void UExtendedArrayLibrary::GenericArray_Diff(const void* TargetArray, const FArrayProperty* ArrayProperty, const void* OtherArray, const FArrayProperty* OtherArrayProperty, void* AddedArray, FArrayProperty* AddedArrayProperty, void* RemovedArray, FArrayProperty* RemovedArrayProperty)
+//{
+//	//FScriptSetHelper SetHelper(SetProperty, TargetSet);
+//	//TSet<double> DoubleSet;
+//	//DoubleSet.Difference();
+//
+//	//FScriptArrayHelper ArrayHelper(ArrayProperty, TargetArray);
+//	
+//	//TArray<int> IntArray;
+//
+//	//IntArray.FilterByPredicate();
+//}
+
+
+namespace StringSorting
 {
-	//FScriptSetHelper SetHelper(SetProperty, TargetSet);
-	//TSet<double> DoubleSet;
-	//DoubleSet.Difference();
+	FString StripLeadingZeros(const FString& Num)
+	{
+		int32 NonZeroIndex = 0;
+		while (NonZeroIndex < Num.Len() && Num[NonZeroIndex] == '0') NonZeroIndex++;
+		return NonZeroIndex == Num.Len() ? TEXT("0") : Num.Mid(NonZeroIndex);
+	}
 
-	//FScriptArrayHelper ArrayHelper(ArrayProperty, TargetArray);
-	
-	//TArray<int> IntArray;
+	int CompareSegments(const FString& A, const FString& B)
+	{
+		FString CleanA = StripLeadingZeros(A);
+		FString CleanB = StripLeadingZeros(B);
 
-	//IntArray.FilterByPredicate();
+		if (CleanA.Len() != CleanB.Len()) return CleanA.Len() < CleanB.Len() ? -1 : 1;
+
+		return CleanA.Compare(CleanB);
+	}
+
+	int32 NaturalCompare(const FString& A, const FString& B, bool bGroupNumbers)
+	{
+		if (!bGroupNumbers) return A.Compare(B);
+
+		int32 IndexA = 0, IndexB = 0;
+
+		while (IndexA < A.Len() && IndexB < B.Len())
+		{
+			if (FChar::IsDigit(A[IndexA]) && FChar::IsDigit(B[IndexB]))
+			{
+				int32 StartA = IndexA, StartB = IndexB;
+				while (IndexA < A.Len() && FChar::IsDigit(A[IndexA])) IndexA++;
+				while (IndexB < B.Len() && FChar::IsDigit(B[IndexB])) IndexB++;
+
+				int Result = CompareSegments(A.Mid(StartA, IndexA - StartA), B.Mid(StartB, IndexB - StartB));
+				if (Result != 0) return Result;
+			}
+			else
+			{
+				TCHAR CharA = A[IndexA++];
+				TCHAR CharB = B[IndexB++];
+				if (CharA != CharB) return CharA < CharB ? -1 : 1;
+			}
+		}
+
+		return A.Len() - B.Len();
+	}
 }
 
+void UExtendedArrayLibrary::SortStringArrayInPlace(TArray<FString>& Strings, const bool Reversed, const bool bGroupNumbers)
+{
+	Strings.Sort([=](const FString& A, const FString& B)
+		{
+			int32 Result = StringSorting::NaturalCompare(A, B, bGroupNumbers);
+			return Reversed ? Result > 0 : Result < 0;
+		});
+}
+
+void UExtendedArrayLibrary::SortNameArrayInPlace(TArray<FName>& Names, const bool Reversed, const bool bGroupNumbers)
+{
+	Names.Sort([=](const FName& A, const FName& B)
+		{
+			int32 Result = StringSorting::NaturalCompare(A.ToString(), B.ToString(), bGroupNumbers);
+			return Reversed ? Result > 0 : Result < 0;
+		});
+}

@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
+	"Version": 2,
+	"VersionName": "1.1",
 	"FriendlyName": "Extended Unreal",
 	"Description": "Lightweight Collection of Functions and Features made accessible to Blueprints.",
 	"Category": "Misc",
@@ -24,6 +24,14 @@
 	"Plugins": [
 		{
 			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ControlRig",
+			"Enabled": true
+		},
+		{
+			"Name": "RigVM",
 			"Enabled": true
 		}
 	]

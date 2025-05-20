@@ -470,7 +470,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintCallable, Category = "Variables|StaticMesh", meta = (DevelopmentOnly))
 	static void SetAllowCPUAccess(UStaticMesh* StaticMesh, const bool bAllowCPUAccess);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Math|Vector")
 	static TArray<FVector> FlipVectors(const TArray<FVector>& Vectors);
 
 

@@ -202,19 +202,22 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **World** Library | World Type Query                   | Runtime |
 
 
-
-
-
-| Macros                   | Description |
-|--------------------------|-------------|
-| Merge                    | Merges two execution lines together and returns which execution line was used. This is useful for feeding into a `Select`.                      |
-| For Loop (Continue)      | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
-| For Each Loop (Continue) | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
+| Macros                    | Description |
+|---------------------------|-------------|
+| Merge                     | Merges two execution lines together and returns which execution line was used. This is useful for feeding into a `Select`.                      |
+| For Loop (Continue)       | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
+| For Each Loop (Continue)  | Requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time. |
+| And                       | Once both executions have been called, the output will fire. Functions as a Reverse-Sequence..    
+| For Each Loop by Ref      | For-Each-Loop variation which returns the reference value instead of a copy.
+| ForEachLoop (Map)         | For-Each-Loop which can operate on Map/Dictionary values.
+| ReverseForEachLoop (Map)  | For-Each-Loop for Map/Dictionary variation which iterates the keys in reverse. While these are not guarunteed to be ordered, they typically are in editor.
+| ForEachLoopContinue (Map) | For-Each-Loop for Map/Dictionary variation which requires `Continue` pin to be executed for the loop to continue, this is useful when the loop is large and should happen in segments over time.
 
 
 | Widgets     | Description |
 |-------------|-------------|
 | Style Image | Displays the image associated the [AppStyle](https://docs.unrealengine.com/5.0/en-US/API/Runtime/SlateCore/Styling/FAppStyle/)'s Property Name. |
+
 
 | Graph Nodes | Description |
 |-------------|-------------|

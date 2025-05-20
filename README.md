@@ -25,101 +25,100 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended Blend Space Axis| Used as parameter  for `GetBlendSpaceAxisMinMax()` |
 
 
-| Class                       | Blueprint Functions                                   | Domain     |
-|-----------------------------|-------------------------------------------------------|------------|
-| Extended **Unreal** Library | Make Brush from App Style                             | Runtime    |
-| Extended **Unreal** Library | Make Brush from Style Set                             | Runtime    |
-| Extended **Unreal** Library | Make Brush from Slate Icon                            | Runtime    |
-| Extended **Unreal** Library | Get Soft Class Name                                   | Runtime    |
-| Extended **Unreal** Library | Get Soft Class Display Name Text                      | Developer  |
-| Extended **Unreal** Library | Get Soft Object Name                                  | Runtime    |
-| Extended **Unreal** Library | Get Class Display Name Text                           | Developer  |
-| Extended **Unreal** Library | Get Component (Component Reference)                   | Runtime    |
-| Extended **Unreal** Library | Make Component Reference                              | Runtime    |
-| Extended **Unreal** Library | Get Component by Name                                 | Runtime    |
-| Extended **Unreal** Library | To Display String                                     | Runtime    |
-| Extended **Unreal** Library | Focus Viewport to Selection                           | Developer  |
-| Extended **Unreal** Library | Get Attached Actors of Class                          | Runtime    |
-| Extended **Unreal** Library | Get First Attached Actor of Class                     | Runtime    |
-| Extended **Unreal** Library | Set Active (Safe) (Component)                         | Runtime    |
-| Extended **Unreal** Library | Is Running Construction (Actor)                       | Runtime    |
-| Extended **Unreal** Library | Is Beginning Play (Actor)                             | Runtime    |
-| Extended **Unreal** Library | Has Begun Play (Actor)                                | Runtime    |
-| Extended **Unreal** Library | Is in Play (Actor)                                    | Runtime    |
-| Extended **Unreal** Library | Set Actor Display Name                                | Developer  |
-| Extended **Unreal** Library | Rename Object                                         | Runtime    |
-| Extended **Unreal** Library | Set Root Component                                    | Runtime    |
-| Extended **Unreal** Library | Spawn Actor from Class                                | Runtime    |
-| Extended **Unreal** Library | Get Hash                                              | Runtime    |
-| Extended **Unreal** Library | Hash Combine                                          | Runtime    |
-| Extended **Unreal** Library | Hash Combine Fast                                     | Runtime    |
-| Extended **Unreal** Library | Does Class Implement Interface                        | Runtime    |
-| Extended **Unreal** Library | Destroy Audio Component when Complete                 | Runtime    |
-| Extended **Unreal** Library | Is Actor in Actor Owner Chain                         | Runtime    |
-| Extended **Unreal** Library | Is Actor in Component Owner Chain                     | Runtime    |
-| Extended **Unreal** Library | Get Owner Chain                                       | Runtime    |
-| Extended **Unreal** Library | Get Owner (Safe)                                      | Runtime    |
-| Extended **Unreal** Library | Is Net Startup Actor                                  | Runtime    |
-| Extended **Unreal** Library | As Actor or Owner                                     | Runtime    |
-| Extended **Unreal** Library | Bind Event to OnTransformUpdated                      | Runtime    |
-| Extended **Unreal** Library | Unbind Event from OnTransformUpdated                  | Runtime    |
-| Extended **Unreal** Library | Is Valid (DelegateHandleWrapper)                      | Runtime    |
-| Extended **Unreal** Library | Reset (DelegateHandleWrapper)                         | Runtime    |
-| Extended **Unreal** Library | Equal Equal (DelegateHandleWrapper)                   | Runtime    |
-| Extended **Unreal** Library | Not Equal (DelegateHandleWrapper)                     | Runtime    |
-| Extended **Unreal** Library | Set Auto Possess AI                                   | Runtime    |
-| Extended **Unreal** Library | Set Preview Skeletal Mesh                             | Developer  |
-| Extended **Unreal** Library | Get Distance Along Spline at Time                     | Runtime    |
-| Extended **Unreal** Library | Get Time Along Spline at Time                         | Runtime    |
-| Extended **Unreal** Library | Get Time Along Spline at Spline Point                 | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Capsule                               | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Sphere                                | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Box                                   | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Capsule                               | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Sphere                                | Runtime    |
-| Extended **Unreal** Library | Is Point Inside Box                                   | Runtime    |
-| Extended **Unreal** Library | Get Capsule Top Location                              | Runtime    |
-| Extended **Unreal** Library | Get Capsule Bottom Location                           | Runtime    |
-| Extended **Unreal** Library | Get Owner Chain                                       | Runtime    |
-| Extended **Unreal** Library | Get Interface Implementor                             | Runtime    |
-| Extended **Unreal** Library | Get Interface Implementors                            | Runtime    |
-| Extended **Unreal** Library | Get Player Viewport Transform                         | Runtime    |
-| Extended **Unreal** Library | Get Timeline Duration                                 | Runtime    |
-| Extended **Unreal** Library | Set Timeline Duration                                 | Runtime    |
-| Extended **Unreal** Library | IsInWater (Movement Component)                        | Runtime    |
-| Extended **Unreal** Library | Get Level Editing Viewport Location                   | Developer  |
-| Extended **Unreal** Library | Set Level Editing Viewport Location                   | Developer  |
-| Extended **Unreal** Library | Get Level Editing Viewport Rotation                   | Developer  |
-| Extended **Unreal** Library | Set Level Editing Viewport Rotation                   | Developer  |
-| Extended **Unreal** Library | Set Absolute (Advanced)                               | Runtime    |
-| Extended **Unreal** Library | Browse to Assets                                      | Developer  |
-| Extended **Unreal** Library | Editor Request Play Session                           | Developer  |
-| Extended **Unreal** Library | Create RenderTargetCube                               | Runtime    |
-| Extended **Unreal** Library | Clear RenderTargetCube                                | Runtime    |
-| Extended **Unreal** Library | Mark RenderTransform Dirty                            | Runtime    |
-| Extended **Unreal** Library | Mark RenderState Dirty                                | Runtime    |
-| Extended **Unreal** Library | Get AllowCPUAccess                                    | Runtime    |
-| Extended **Unreal** Library | Set AllowCPUAccess                                    | Developer  |
-| Extended **Unreal** Library | Flip Vectors                                          | Runtime    |
-| Extended **Unreal** Library | Oriented Box Overlap Actors                           | Runtime    |
-| Extended **Unreal** Library | Oriented Box Overlap Components                       | Runtime    |
-| Extended **Unreal** Library | Sphere Overlap Component Collision                    | Runtime    |
-| Extended **Unreal** Library | Get Closest Point on Collision                        | Runtime    |
-| Extended **Unreal** Library | Get Closest Point on BodySetup                        | Runtime    |
-| Extended **Unreal** Library | Get Segments overlaping Component                     | Runtime    |
-| Extended **Unreal** Library | Is Level Name Valid                                   | Runtime    |
-| Extended **Unreal** Library | Get Character Arrow                                   | Developer  |
-| Extended **Unreal** Library | Set Component Sprite                                  | Developer  |
-| Extended **Unreal** Library | Set Actor Root Sprite                                 | Developer  |
-| Extended **Unreal** Library | Set Transient                                         | Runtime    |
-| Extended **Unreal** Library | Get Transient                                         | Runtime    |
-| Extended **Unreal** Library | Set Editor Only Actor                                 | Runtime    |
-| Extended **Unreal** Library | Set Jump Height                                       | Runtime    |
-| Extended **Unreal** Library | Get Character Origin from Base Location               | Runtime    |
-| Extended **Unreal** Library | Get Character Base Location                           | Runtime    |
-| Extended **Unreal** Library | Find Actors by File Names                             | Runtime    |
-| Extended **Unreal** Library | Set Use Complex as Simple Collision (Procedural Mesh) | Runtime    |
-
+| Class                       | Blueprint Functions                              | Domain     |
+|-----------------------------|--------------------------------------------------|------------|
+| Extended **Unreal** Library | Make Brush from App Style                        | Runtime    |
+| Extended **Unreal** Library | Make Brush from Style Set                        | Runtime    |
+| Extended **Unreal** Library | Make Brush from Slate Icon                       | Runtime    |
+| Extended **Unreal** Library | Get Soft Class Name                              | Runtime    |
+| Extended **Unreal** Library | Get Soft Class Display Name Text                 | Developer  |
+| Extended **Unreal** Library | Get Soft Object Name                             | Runtime    |
+| Extended **Unreal** Library | Get Class Display Name Text                      | Developer  |
+| Extended **Unreal** Library | Get Component (Component Reference)              | Runtime    |
+| Extended **Unreal** Library | Make Component Reference                         | Runtime    |
+| Extended **Unreal** Library | Get Component by Name                            | Runtime    |
+| Extended **Unreal** Library | To Display String                                | Runtime    |
+| Extended **Unreal** Library | Focus Viewport to Selection                      | Developer  |
+| Extended **Unreal** Library | Get Attached Actors of Class                     | Runtime    |
+| Extended **Unreal** Library | Get First Attached Actor of Class                | Runtime    |
+| Extended **Unreal** Library | Set Active (Safe) (Component)                    | Runtime    |
+| Extended **Unreal** Library | Is Running Construction (Actor)                  | Runtime    |
+| Extended **Unreal** Library | Is Beginning Play (Actor)                        | Runtime    |
+| Extended **Unreal** Library | Has Begun Play (Actor)                           | Runtime    |
+| Extended **Unreal** Library | Is in Play (Actor)                               | Runtime    |
+| Extended **Unreal** Library | Set Actor Display Name                           | Developer  |
+| Extended **Unreal** Library | Rename Object                                    | Runtime    |
+| Extended **Unreal** Library | Set Root Component                               | Runtime    |
+| Extended **Unreal** Library | Spawn Actor from Class                           | Runtime    |
+| Extended **Unreal** Library | Get Hash                                         | Runtime    |
+| Extended **Unreal** Library | Hash Combine                                     | Runtime    |
+| Extended **Unreal** Library | Hash Combine Fast                                | Runtime    |
+| Extended **Unreal** Library | Does Class Implement Interface                   | Runtime    |
+| Extended **Unreal** Library | Destroy Audio Component when Complete            | Runtime    |
+| Extended **Unreal** Library | Is Actor in Actor Owner Chain                    | Runtime    |
+| Extended **Unreal** Library | Is Actor in Component Owner Chain                | Runtime    |
+| Extended **Unreal** Library | Get Owner Chain                                  | Runtime    |
+| Extended **Unreal** Library | Get Owner (Safe)                                 | Runtime    |
+| Extended **Unreal** Library | Is Net Startup Actor                             | Runtime    |
+| Extended **Unreal** Library | As Actor or Owner                                | Runtime    |
+| Extended **Unreal** Library | Bind Event to OnTransformUpdated                 | Runtime    |
+| Extended **Unreal** Library | Unbind Event from OnTransformUpdated             | Runtime    |
+| Extended **Unreal** Library | Is Valid (DelegateHandleWrapper)                 | Runtime    |
+| Extended **Unreal** Library | Reset (DelegateHandleWrapper)                    | Runtime    |
+| Extended **Unreal** Library | Equal Equal (DelegateHandleWrapper)              | Runtime    |
+| Extended **Unreal** Library | Not Equal (DelegateHandleWrapper)                | Runtime    |
+| Extended **Unreal** Library | Set Auto Possess AI                              | Runtime    |
+| Extended **Unreal** Library | Set Preview Skeletal Mesh                        | Developer  |
+| Extended **Unreal** Library | Get Distance Along Spline at Time                | Runtime    |
+| Extended **Unreal** Library | Get Time Along Spline at Time                    | Runtime    |
+| Extended **Unreal** Library | Get Time Along Spline at Spline Point            | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Capsule                          | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Sphere                           | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Box                              | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Capsule                          | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Sphere                           | Runtime    |
+| Extended **Unreal** Library | Is Point Inside Box                              | Runtime    |
+| Extended **Unreal** Library | Get Capsule Top Location                         | Runtime    |
+| Extended **Unreal** Library | Get Capsule Bottom Location                      | Runtime    |
+| Extended **Unreal** Library | Get Owner Chain                                  | Runtime    |
+| Extended **Unreal** Library | Get Interface Implementor                        | Runtime    |
+| Extended **Unreal** Library | Get Interface Implementors                       | Runtime    |
+| Extended **Unreal** Library | Get Player Viewport Transform                    | Runtime    |
+| Extended **Unreal** Library | Get Timeline Duration                            | Runtime    |
+| Extended **Unreal** Library | Set Timeline Duration                            | Runtime    |
+| Extended **Unreal** Library | IsInWater (Movement Component)                   | Runtime    |
+| Extended **Unreal** Library | Get Level Editing Viewport Location              | Developer  |
+| Extended **Unreal** Library | Set Level Editing Viewport Location              | Developer  |
+| Extended **Unreal** Library | Get Level Editing Viewport Rotation              | Developer  |
+| Extended **Unreal** Library | Set Level Editing Viewport Rotation              | Developer  |
+| Extended **Unreal** Library | Set Absolute (Advanced)                          | Runtime    |
+| Extended **Unreal** Library | Browse to Assets                                 | Developer  |
+| Extended **Unreal** Library | Editor Request Play Session                      | Developer  |
+| Extended **Unreal** Library | Create RenderTargetCube                          | Runtime    |
+| Extended **Unreal** Library | Clear RenderTargetCube                           | Runtime    |
+| Extended **Unreal** Library | Mark RenderTransform Dirty                       | Runtime    |
+| Extended **Unreal** Library | Mark RenderState Dirty                           | Runtime    |
+| Extended **Unreal** Library | Get AllowCPUAccess                               | Runtime    |
+| Extended **Unreal** Library | Set AllowCPUAccess                               | Developer  |
+| Extended **Unreal** Library | Flip Vectors                                     | Runtime    |
+| Extended **Unreal** Library | Oriented Box Overlap Actors                      | Runtime    |
+| Extended **Unreal** Library | Oriented Box Overlap Components                  | Runtime    |
+| Extended **Unreal** Library | Sphere Overlap Component Collision               | Runtime    |
+| Extended **Unreal** Library | Get Closest Point on Collision                   | Runtime    |
+| Extended **Unreal** Library | Get Closest Point on BodySetup                   | Runtime    |
+| Extended **Unreal** Library | Get Segments overlaping Component                | Runtime    |
+| Extended **Unreal** Library | Is Level Name Valid                              | Runtime    |
+| Extended **Unreal** Library | Get Character Arrow                              | Developer  |
+| Extended **Unreal** Library | Set Component Sprite                             | Developer  |
+| Extended **Unreal** Library | Set Actor Root Sprite                            | Developer  |
+| Extended **Unreal** Library | Set Transient                                    | Runtime    |
+| Extended **Unreal** Library | Get Transient                                    | Runtime    |
+| Extended **Unreal** Library | Set Editor Only Actor                            | Runtime    |
+| Extended **Unreal** Library | Set Jump Height                                  | Runtime    |
+| Extended **Unreal** Library | Get Character Origin from Base Location          | Runtime    |
+| Extended **Unreal** Library | Get Character Base Location                      | Runtime    |
+| Extended **Unreal** Library | Find Actors by File Names                        | Runtime    |
+| Extended **Unreal** Library | Set UseComplexAsSimpleCollision (ProceduralMesh) | Runtime    |
 | Extended **Animation** Library | Get Blend Space Axis Min Max    | Runtime  |
 | Extended **Animation** Library | Get Linked Anim Layers          | Runtime  |
 | Extended **Animation** Library | Get All Animations              | Runtime  |

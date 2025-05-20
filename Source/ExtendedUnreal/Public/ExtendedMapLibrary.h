@@ -41,7 +41,7 @@ public:
 
 		// Value //
 		const FProperty* SearchValueProperty = MapProperty->ValueProp;
-		const int32 ValuePropertySize = SearchValueProperty->ElementSize * SearchValueProperty->ArrayDim;
+		const int32 ValuePropertySize = SearchValueProperty->GetElementSize() * SearchValueProperty->ArrayDim;
 		void* SearchValueStorageSpace = FMemory_Alloca(ValuePropertySize);
 		SearchValueProperty->InitializeValue(SearchValueStorageSpace);
 

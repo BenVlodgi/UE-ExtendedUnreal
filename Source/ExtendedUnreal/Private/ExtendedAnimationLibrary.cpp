@@ -49,7 +49,7 @@ TArray<UAnimationAsset*> UExtendedAnimationLibrary::GetAllAnimations()
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
 	TArray<FAssetData> AnimationAssets;
-	if (AssetRegistry.GetAssetsByClass(UAnimationAsset::StaticClass()->GetFName(), AnimationAssets, true))
+	if (AssetRegistry.GetAssetsByClass(FTopLevelAssetPath(UAnimationAsset::StaticClass()), AnimationAssets, true))
 	{
 		for (const FAssetData& AssetData : AnimationAssets)
 		{

@@ -2,6 +2,9 @@
 
 #include "ExtendedUnrealModule.h"
 
+#include "ExtendedUnrealLog.h"
+DEFINE_LOG_CATEGORY(LogExtendedUnreal);
+
 #define LOCTEXT_NAMESPACE "FExtendedUnrealModule"
 
 void FExtendedUnrealModule::StartupModule()

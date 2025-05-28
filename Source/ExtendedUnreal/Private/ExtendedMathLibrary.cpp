@@ -344,7 +344,14 @@ FVector UExtendedMathLibrary::CalculateEdgeUpDirection(const FVector& Vertex1, c
 
 int32 UExtendedMathLibrary::RandomWeightedArrayItem(const TArray<double>& WeightedArray)
 {
-	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0);
+	// Sum the total weight, but ignore negative values (They would throw off the math, and have no influence).
+	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0, 
+		[](double Sum, double Value)
+		{
+			return Value >= 0.0 ? Sum + Value : Sum;
+		});
+
+	// If there were no positive values, then there's nothing to select.
 	if (TotalWeight <= 0.0)
 	{
 		return INDEX_NONE;
@@ -355,6 +362,12 @@ int32 UExtendedMathLibrary::RandomWeightedArrayItem(const TArray<double>& Weight
 
 	for (int32 i = 0; i < WeightedArray.Num(); ++i)
 	{
+		// Skip negative and 0 weights.
+		if (WeightedArray[i] <= 0.0)
+		{
+			continue;
+		}
+
 		AccumulatedWeight += WeightedArray[i];
 		if (RandomPoint <= AccumulatedWeight)
 		{
@@ -372,12 +385,21 @@ int32 UExtendedMathLibrary::RandomWeightedArrayItem(const TArray<double>& Weight
 		}
 	}
 
-	return INDEX_NONE; // This should never be reached as long as there was at least one non-zero weight.
+	// This should never be reached.
+	ensureMsgf(false, TEXT("RandomWeightedArrayItem: Failed to chose index when cumulative weight was greater than zero."));
+	return INDEX_NONE;
 }
 
 int32 UExtendedMathLibrary::RandomWeightedArrayItemFromStream(const FRandomStream& Stream, const TArray<double>& WeightedArray)
 {
-	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0);
+	// Sum the total weight, but ignore negative values (They would throw off the math, and have no influence).
+	double TotalWeight = Algo::Accumulate(WeightedArray, 0.0,
+		[](double Sum, double Value)
+		{
+			return Value >= 0.0 ? Sum + Value : Sum;
+		});
+
+	// If there were no positive values, then there's nothing to select.
 	if (TotalWeight <= 0.0)
 	{
 		return INDEX_NONE;
@@ -388,6 +410,12 @@ int32 UExtendedMathLibrary::RandomWeightedArrayItemFromStream(const FRandomStrea
 
 	for (int32 i = 0; i < WeightedArray.Num(); ++i)
 	{
+		// Skip negative and 0 weights.
+		if (WeightedArray[i] <= 0.0)
+		{
+			continue;
+		}
+
 		AccumulatedWeight += WeightedArray[i];
 		if (RandomPoint <= AccumulatedWeight)
 		{
@@ -405,5 +433,7 @@ int32 UExtendedMathLibrary::RandomWeightedArrayItemFromStream(const FRandomStrea
 		}
 	}
 
-	return INDEX_NONE; // This should never be reached as long as there was at least one non-zero weight.
+	// This should never be reached.
+	ensureMsgf(false, TEXT("RandomWeightedArrayItem: Failed to chose index when cumulative weight was greater than zero."));
+	return INDEX_NONE;
 }

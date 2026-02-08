@@ -41,7 +41,7 @@ struct EXTENDEDUNREAL_API FRigUnit_SphereTraceByProfile : public FRigUnit
 	FVector End;
 
 	/** The 'profile' that this trace sweeps with, used to determine which components to hit */
-	UPROPERTY(meta = (Input, DisplayName = "Profile"))
+	UPROPERTY(meta = (Input, DisplayName = "Profile", GetOptions = "Engine.KismetSystemLibrary.GetCollisionProfileNames"))
 	FName ProfileName;
 
 	/** Radius of the sphere to use for sweeping / tracing */

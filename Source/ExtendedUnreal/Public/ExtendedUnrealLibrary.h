@@ -5,6 +5,7 @@
 #include "Enums/WorldType.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
 #include "ExtendedUnrealLibrary.generated.h"
@@ -32,15 +33,41 @@ enum class EQueryObjectMobility : uint8
 	AllDynamicObjects = 2,
 };
 
+USTRUCT(BlueprintType)
+struct FPredictActorPathResult
+{
+	GENERATED_BODY()
+	
+public:
+	/** The final predicted location of the actor */
+	UPROPERTY(BlueprintReadWrite)
+	FVector PredictedLocation = FVector::ZeroVector;
 
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FTransformUpdatedDelegate, USceneComponent*, Component, const FTransform&, NewTransform);
+	/** True if the prediction hit something during the sweep */
+	UPROPERTY(BlueprintReadWrite)
+	bool bBlockingHit = false;
+
+	/** Hit result information if a blocking hit occurred */
+	UPROPERTY(BlueprintReadWrite)
+	FHitResult HitResult;
+
+	/** Time elapsed before hit (or total prediction time if no hit) */
+	UPROPERTY(BlueprintReadWrite)
+	float TimeToHit = 0.0f;
+
+	/** Array of positions along the predicted path (for projectile motion) */
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FVector> PathPositions;
+};
+
+
 
 UCLASS()
 class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
-	public:
+public:
 	//UFUNCTION(BlueprintCallable, Category = "Editor")
 	//static void ExploreFolders();
 
@@ -140,6 +167,13 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Components|Activation", meta = (DefaultToSelf = "Component", DisplayName = "Set Active (Safe)", keywords = "AutoActivate"))
 	static void ComponentSetActiveSafe(UActorComponent* Component, bool bNewActive);
+	
+	/**
+	 * Gets whether the component is active or not.
+	 * If called during construction, will return AutoActivate.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Components|Activation", meta = (DefaultToSelf = "Component", DisplayName = "Get Active (Safe)", keywords = "AutoActivate", ReturnDisplayName = "IsActive"))
+	static bool ComponentGetActiveSafe(const UActorComponent* Component);
 
 	/** Returns if this actor is currently running the User Construction Script */
 	UFUNCTION(BlueprintPure, Category = "Actor", meta = (DefaultToSelf = "Actor", DisplayName = "Is Running Construction (Actor)", keywords = "Is RunningUserConstructionScript"))
@@ -185,7 +219,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (DefaultToSelf = "Actor"))
 	static UPARAM(DisplayName = "Success") bool SetRootComponent(AActor* Actor, USceneComponent* NewRootComponent);
 
-	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (WorldContext = "WorldContextObject"))
+	UFUNCTION(BlueprintCallable, Category = "Actor", meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "ActorClass"))
 	static AActor* SpawnActorFromClass(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot, AActor* Owner = nullptr, APawn* Instigator = nullptr);
 
 	/**
@@ -222,7 +256,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	 * You may want to choose HashCombineFast for a better in-memory hash combining function.
 	 */
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Hash Combine", BlueprintThreadSafe), Category = "Utilities")
-	static int32 ExtendedHashCombine(const int32 A, const int32 B);
+	static int32 ExtendedHashCombine(const int32 A, const int32 B, const bool bOrderDependent = true);
 
 	/**
  	* Combines two hash values to get a third.
@@ -233,7 +267,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
  	*           e.g. GetTypeHash() overloads.
  	*/
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Hash Combine Fast", BlueprintThreadSafe), Category = "Utilities")
-	static int32 ExtendedHashCombineFast(const int32 A, const int32 B);
+	static int32 ExtendedHashCombineFast(const int32 A, const int32 B, const bool bOrderDependent = true);
 
 	/** Checks if this class implements a specific interface, works for both native and blueprint interfaces. */
 	UFUNCTION(BlueprintPure, Category = "Utilities")
@@ -297,17 +331,42 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintPure, Category = "Object", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext))
 	static const AActor* AsActorOrOwner(const UObject* Target);
 
+
+	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FTransformUpdatedDelegate, USceneComponent*, Component, const FTransform&, OldTransform, const FTransform&, NewTransform);
 	/**
 	 * Create binding to component's OnTransformUpdated delegate.
+	 * Optionally disable elements of the transform's change detection.
+	 * 
+ 	 * @param Target            Scene component to track for transform updates.
+ 	 * @param OnTransformUpdated Event to invoke when the component’s transform changes.
+ 	 * @param bLocationChange   If true, location changes will trigger the bound event.
+ 	 * @param bRotationChange   If true, rotation changes will trigger the bound event.
+ 	 * @param bScaleChange      If true, scale changes will trigger the bound event.
+ 	 * @param Tolerance         The minimum difference required to consider the transform changed.
+ 	 *
+ 	 * @return Binding handle which can be used to unbind the delegate.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Components", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext))
-	static UPARAM(DisplayName = "Handle") FDelegateHandleWrapper BindEventToOnTransformUpdated(USceneComponent* Target, FTransformUpdatedDelegate OnTransformUpdated);
+	UFUNCTION(BlueprintCallable, Category = "Components", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext, DisplayName = "Bind Event to On Transform Changed"))
+	static UPARAM(DisplayName = "Handle") FDelegateHandleWrapper BindEventToOnTransformUpdated(USceneComponent* Target, UPARAM(DisplayName = "OnTransformChanged") FTransformUpdatedDelegate OnTransformUpdated, bool bLocationChange = true, bool bRotationChange = true, bool bScaleChange = true, double Tolerance = 1.e-4);
 
 	/**
 	 * Remove binding from component's OnTransformUpdated delegate.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Components", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext))
 	static void UnbindEventFromOnTransformUpdated(USceneComponent* Target, const FDelegateHandleWrapper& Handle);
+
+	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FLocationUpdatedDelegate, USceneComponent*, Component, const FVector&, OldLocation, const FVector&, NewLocation);
+	/**
+	 * Create binding which fires whenever the component's location is changed.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext, KeyWords = "Updated", DisplayName = "Bind Event to On Location Changed"))
+	static FDelegateHandleWrapper BindEventToOnLocationChanged(USceneComponent* Target, FLocationUpdatedDelegate OnLocationChanged);
+
+	/**
+	 * Remove binding from component's OnTransformUpdated delegate.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components", meta = (DefaultToSelf = "Target", CallableWithoutWorldContext))
+	static void UnbindEventFromOnLocationUpdated(USceneComponent* Target, const FDelegateHandleWrapper& Handle);
 
 	/** Returns true if this was ever bound to a delegate, but you need to check with the owning delegate to confirm it is still valid. */
 	UFUNCTION(BlueprintCallable, Category = "DelegateHandle", meta = (DisplayName = "IsValid (DelegateHandle)", CallableWithoutWorldContext))
@@ -335,7 +394,7 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	 *
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Animation", meta = (DevelopmentOnly))
-	static void SetPreviewSkeletalMesh(UAnimationAsset* AnimationAsset, USkeletalMesh* PreviewMesh);
+	static void SetPreviewSkeletalMesh(UAnimationAsset* VertexAnimationProfileAsset, USkeletalMesh* PreviewMesh);
 
 	/**
 	 *
@@ -516,27 +575,40 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	* @return		True if the sphere overlaps the collision.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Collision") //, meta = (UnsafeDuringActorConstruction = "true"))
-	static bool SphereOverlapComponentCollision(const UPrimitiveComponent * Component, const FVector& Point, const float Radius, FName BoneName, FVector& OutPointOnBody, float& Distance);
+	static bool SphereOverlapComponentCollision(const UPrimitiveComponent* Component, const FVector& Point, const float Radius, FName BoneName, UPARAM(DisplayName = "ClosestPoint") FVector& OutClosestPoint, UPARAM(DisplayName = "Distance") double& OutDistance);
+
+	static bool GetClosestPointOnBodySetup(UBodySetup* BodySetup, const FTransform& BodyTransform, const FVector& Point, FVector& ClosestPoint, double& DistanceSquared);
 
 	/**
-	* Returns the distance and closest point to the collision surface.
+	* Returns the distance and closest point on/in the component's Simple Collision.
 	* Component must have simple collision to be queried for closest point.
 	* This will work even if collision is disabled, unlike in UPrimitiveComponent::GetClosestPointOnCollision.
 	*
 	* @param Component					Component to check point against.
-	* @param BoneName					If a SkeletalMeshComponent, name of body to set center of mass of. 'None' indicates root body.
-	* @param Point						World 3D vector.
-	* @param OutPointOnCollision		Point on the surface of collision closest to Point.
+	* @param BoneName					If a SkeletalMeshComponent: name of body to set center of mass of. 'None' indicates root body.
+	* @param Point						Location in world space to check.
+	* @param OutPointOnCollision		Closest location on/in the collision from Point.
 	* @param Distance					Distance from point to the closest location.
 	*
 	* @return		Success if true: it is either not convex or inside of the point
 	*				If false: this primitive does not have collsion
 	*/
-	UFUNCTION(BlueprintCallable, Category = "Collision", meta=(UnsafeDuringActorConstruction="true"))
-	static bool GetClosestPointOnCollision(UPrimitiveComponent* Component, const FName BoneName, const FVector& Point, FVector& OutPointOnCollision, double& Distance);
+	UFUNCTION(BlueprintCallable, Category = "Collision")
+	static bool GetClosestPointOnCollision(UPrimitiveComponent* Component, const FName BoneName, const FVector& Point, UPARAM(DisplayName = "ClosestPoint") FVector& OutClosestPoint, UPARAM(DisplayName = "Distance") double& OutDistance);
 
-	static bool GetClosestPointOnBodySetup(UBodySetup* BodySetup, const FTransform& BodyTransform, const FVector& Point, FVector& ClosestPoint, double& DistanceSquared);
-	
+	/**
+	 * Calculates the closest point on/in the Component's Oriented Bounding Box to a given point.
+	 *
+	 * @param Component The Component's bounds to check.
+	 * @param Point Location in world space to check.
+	 * @param OutPointOnBounds Closest location on/in the collision from Point.
+	 * @param OutDistance Distance from the given Point to OutPointOnBounds.
+	 *
+	 * @return True if a valid closest point was found. False if the Component was null or had no bounds.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Collision")
+	static bool GetClosestPointOnComponentBounds(UPrimitiveComponent* Component, const FVector& Point, UPARAM(DisplayName = "ClosestPoint") FVector& OutClosestPoint, UPARAM(DisplayName = "Distance") double& OutDistance);
+
 	/**
 	 * Gets the segments of path where points overlap a component's collision as capsule.
 	 * @param Path The path to check for overlapping segments.
@@ -606,13 +678,25 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	 * Calculates Character origin location which would put the character's base at the given BaseLocation.
 	 **/
 	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", keywords = "feet, convert"), Category = "Character")
-	static FVector GetCharacterOriginFromBaseLocation(ACharacter* Target, const FVector BaseLocation);
+	static FVector GetCharacterOriginFromBaseLocation(const ACharacter* Target, const FVector BaseLocation);
 
 	/** 
 	 * Gets location at the base of the character capsule.
 	 **/
 	UFUNCTION(BlueprintPure, meta = (DefaultToSelf = "Target", keywords = "feet, convert"), Category = "Character")
 	static UPARAM(DisplayName = "BaseLocation") FVector GetCharacterBaseLocation(const ACharacter* Target);
+
+	/**
+	 * Sets character capsule bottom to the specified location.
+	 **/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", keywords = "feet"), Category = "Character")
+	static bool SetCharacterBaseLocation(ACharacter* Target, const FVector BaseLocation, bool bSweep, FHitResult& SweepHitResult, bool bTeleport);
+
+	/**
+	 * Sets character capsule bottom to the specified location and rotation.
+	 **/
+	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "Target", keywords = "feet"), Category = "Character")
+	static bool SetCharacterBaseLocationAndRotation(ACharacter* Target, const FVector BaseLocation, FRotator BaseRotation, bool bSweep, FHitResult& SweepHitResult, bool bTeleport);
 
 	/**
 	 * Finds all actors in the world with the given GUIDs.
@@ -623,4 +707,106 @@ class EXTENDEDUNREAL_API UExtendedUnrealLibrary : public UBlueprintFunctionLibra
 	UFUNCTION(BlueprintCallable, Category = "Components|ProceduralMesh", meta = (DisplayName = "Set UseComplexAsSimpleCollision (ProceduralMeshComponent)"))
 	static void ProceduralMesh_SetUseComplexAsSimpleCollision(class UProceduralMeshComponent* Target, bool bUseComplexAsSimpleCollision = true);
 
+	/**
+	 * Registers an object to keep alive as long as the current game instance is alive.
+	 * Ignores Actors and Actor Components.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Object")
+	static void RegisterReferencedObject(UObject* WorldContext, UObject* Object);
+
+	/**
+	 * Unregisters a referenced object, this will allow it to be GC'd if not referenced anywhere else.
+	 * Ignores Actors and Actor Components.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Object")
+	static void UnregisterReferencedObject(UObject* WorldContext, UObject* Object);
+
+	/**
+	 * Opens the specified directory in the system's file explorer.
+	 *
+	 * @param DirectoryPath The absolute path of the directory to open.
+	 * @return true if the directory exists and was successfully opened; false otherwise.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Utilities|Paths", meta = (KeyWords = "explore, folder"))
+	static bool OpenDirectoryInFileSystem(const FString& DirectoryPath);
+
+	//static int GetNumberOfShadersBeingCompiled() {return FShaderCompilingManager::GetNumPendingJobs();}
+
+	UFUNCTION(BlueprintCallable, Category = "Utilities|Paths", meta = (KeyWords = "explore, folder", DevelopmentOnly))
+	static void ModifyAndCompileBlueprintClass(UClass* Class);
+
+	/**
+	 * Get statistics about the shader compiling manager.
+	 * 
+	 * @param TotalShadersCompiled Total number of shaders that have been compiled.
+	 * @param LocalWorkersCount Number of curernt local shader compiling workers.
+	 * @param PendingJobsCount Number of pending shader compilation jobs.
+	 * @param OutstandingJobsCount Number of outstanding shader compilation jobs.
+	 * @param ExternalJobsCount Number of jobs currently being compiled. This includes CompileQueue and any jobs that have been assigned to workers but aren't complete yet.
+	 * @param RemainingJobsCount Number of outstanding compile jobs plus External Jobs.
+	 * @param bHasShaderJobs true if we have shader jobs in any state. Shader jobs are removed when they are applied to the GameThreadShaderMap.
+	 * @param bIsCompiling true if async compiling is happening.
+	 * 
+	 * @return true if the ShaderCompilingManager existed.
+	 **/
+	UFUNCTION(BlueprintCallable, Category = "Shader Compilation", meta = (ReturnDisplayName = "Success"))
+	static bool GetShaderCompilingStats(int32& TotalShadersCompiled, int32& LocalWorkersCount, int32& PendingJobsCount, int32& OutstandingJobsCount, int32& ExternalJobsCount, int32& RemainingJobsCount, bool& bHasShaderJobs, bool& bIsCompiling);
+
+	/**
+	 * Retrieves the value of a Static Switch (bool) parameter only from the specified Material Instance.
+	 * Does NOT check parent materials or the base material.
+	 *
+	 * @param MaterialInstance The Material Instance to query.
+	 * @param ParameterName Name of the Static Switch Parameter.
+	 * @param bValue Output parameter that receives the value of the parameter if found.
+	 * @return True if the parameter exists on this instance, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Rendering|Material", meta = (DisplayName = "Get StaticSwitch (bool) Parameter Override Value", ReturnName = "Found"))
+	static bool GetStaticSwitchBoolOverride(const UMaterialInstance* MaterialInstance, const FName ParameterName, bool& bValue);
+
+	/**
+	 * Retrieves the fully resolved value of a Static Switch (bool) parameter from a Material or Material Instance.
+	 * Traverses parent chain and falls back to base material if necessary.
+	 *
+	 * @param MaterialInterface The Material or Material Instance to query.
+	 * @param ParameterName Name of the Static Switch Parameter.
+	 * @param bValue Output parameter that receives the value of the parameter if found.
+	 * @return True if the parameter exists anywhere in the hierarchy, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Rendering|Material", meta = (DisplayName = "Get StaticSwitch (bool) Parameter Value", ReturnName = "Found"))
+	static bool GetStaticSwitchBoolValue(const UMaterialInterface* MaterialInterface, const FName ParameterName, bool& bValue);
+
+	/** Plays an in-world camera shake that affects all nearby local players, with distance-based attenuation. Does not replicate.
+	 * @param WorldContextObject - Object that we can obtain a world context from
+	 * @param Shake - Camera shake asset to use
+	 * @param Epicenter - location to place the effect in world space
+	 * @param InnerRadius - Cameras inside this radius are ignored
+	 * @param OuterRadius - Cameras outside of InnerRadius and inside this are effected
+	 * @param Falloff - Affects falloff of effect as it nears OuterRadius
+	 * @param bOrientShakeTowardsEpicenter - Changes the rotation of shake to point towards epicenter instead of forward
+	 * @param Strength - Scale the intensity of the shake.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Camera", meta=(WorldContext="WorldContextObject", UnsafeDuringActorConstruction = "true", DisplayName = "Play World Camera Shake (Advanced)"))
+	static void PlayWorldCameraShakeAdvanced(const UObject* WorldContextObject, TSubclassOf<class UCameraShakeBase> Shake, FVector Epicenter, float InnerRadius, float OuterRadius, float Falloff = 1.f, bool bOrientShakeTowardsEpicenter = false, float Strength = 1.f);
+
+
+	/**
+	 * Predict where an actor will be after a given amount of time, sweeping collision along the path.
+	 * Uses the actor's actual component collision settings for accurate prediction.
+	 * Automatically uses projectile motion for falling characters or physics objects with gravity.
+	 * 
+	 * @param WorldContextObject    World context
+	 * @param Actor                 The actor to predict
+	 * @param PredictionTime        How far into the future to predict (in seconds)
+	 * @param bTracePath            If true, fill PathPositions array with intermediate points
+	 * @param ClampVelocity         If > 0, limits the maximum initial velocity used for prediction
+	 * @param ActorsToIgnore        Actors to ignore during the sweep
+	 * @param DrawDebugType         Debug visualization option
+	 * @param DrawDebugTime         Duration to display debug visualization
+	 * @param SimFrequency          Simulation steps per second (for ungrounded/projectile motion, higher = more accurate)
+	 * @param OutResult             Prediction result containing location, hit info, and path
+	 * @return                      True if the sweep resulted in a blocking hit
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Game", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore", AdvancedDisplay = "DrawDebugTime, DrawDebugType, SimFrequency, MaxSimTime, OverrideGravityZ", TraceChannel = ECC_WorldDynamic, bTracePath = true, ClampVelocity = 0))
+    static bool PredictActorPath(const UObject* WorldContextObject, AActor* Actor, float PredictionTime, FPredictActorPathResult& OutResult, bool bTracePath, float ClampInitialVelocity, const TArray<AActor*>& ActorsToIgnore, EDrawDebugTrace::Type DrawDebugType, float DrawDebugTime = 2.0f, float SimFrequency = 15.0f);
 };

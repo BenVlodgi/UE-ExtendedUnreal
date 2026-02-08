@@ -4,6 +4,7 @@
 
 
 #include "ExtendedUnrealModule.h"
+#include "ExtendedUnrealLog.h"
 #include "ExtendedMathLibrary.h"
 #include "Structs/DelegateHandleWrapper.h"
 #include "Structs/VectorArray.h"
@@ -13,6 +14,8 @@
 #include "Editor/UnrealEdEngine.h"
 #include "LevelEditorViewport.h"
 #include "LevelEditor.h"
+#include "Kismet2/BlueprintEditorUtils.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #endif
 
 #include "UObject/NameTypes.h"
@@ -34,13 +37,20 @@
 #include "Components/BoxComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "DelayAction.h"
+#include "DrawDebugHelpers.h"
 #include "ClearQuad.h"
+#include "CollisionQueryParams.h"
 #include "RHIContext.h"
 #include "RHIUtilities.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/OverlapResult.h"
 #include "EngineUtils.h"
+#include "ShaderCompiler.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/MaterialExpressionStaticSwitchParameter.h"
+
 
 
 UExtendedUnrealLibrary::UExtendedUnrealLibrary(const FObjectInitializer& ObjectInitializer)
@@ -280,6 +290,13 @@ void UExtendedUnrealLibrary::ComponentSetActiveSafe(UActorComponent* Component, 
 	}
 }
 
+bool UExtendedUnrealLibrary::ComponentGetActiveSafe(const UActorComponent* Component)
+{
+	return !IsValid(Component) ? false
+		: Component->IsOwnerRunningUserConstructionScript() ? Component->bAutoActivate
+		: Component->IsActive();
+}
+
 bool UExtendedUnrealLibrary::ActorIsRunningConstruction(const AActor* Actor)
 {
 	return IsValid(Actor) ?
@@ -373,14 +390,38 @@ AActor* UExtendedUnrealLibrary::SpawnActorFromClass(const UObject* WorldContextO
 	return Actor;
 }
 
-int32 UExtendedUnrealLibrary::ExtendedHashCombine(const int32 A, const int32 B)
+int32 UExtendedUnrealLibrary::ExtendedHashCombine(const int32 A, const int32 B, const bool bOrderDependent)
 {
-	return HashCombine(A, B);
+	if (bOrderDependent)
+	{
+		return HashCombine(A, B);
+	}
+
+	if (A < B)
+	{
+		return HashCombine(A, B);
+	}
+	else
+	{
+		return HashCombine(B, A);
+	}
 }
 
-int32 UExtendedUnrealLibrary::ExtendedHashCombineFast(int32 A, int32 B)
+int32 UExtendedUnrealLibrary::ExtendedHashCombineFast(int32 A, int32 B, const bool bOrderDependent)
 {
-	return HashCombineFast(A, B);;
+	if (bOrderDependent)
+	{
+		return HashCombineFast(A, B);
+	}
+
+	if (A < B)
+	{
+		return HashCombineFast(A, B);
+	}
+	else
+	{
+		return HashCombineFast(B, A);
+	}
 }
 
 bool UExtendedUnrealLibrary::DoesClassImplementInterface(const UClass* Class, const TSubclassOf<UInterface> Interface)
@@ -508,18 +549,80 @@ const AActor* UExtendedUnrealLibrary::AsActorOrOwner(const UObject* Target)
 	return nullptr;
 }
 
-FDelegateHandleWrapper UExtendedUnrealLibrary::BindEventToOnTransformUpdated(USceneComponent* Target, FTransformUpdatedDelegate OnTransformUpdated)
+FDelegateHandleWrapper UExtendedUnrealLibrary::BindEventToOnTransformUpdated(USceneComponent* Target, FTransformUpdatedDelegate OnTransformUpdated, bool bLocationChange, bool bRotationChange, bool bScaleChange, double Tolerance)
+{
+	FDelegateHandleWrapper Handle;
+
+	if (!IsValid(Target))
+	{
+		return Handle;
+	}
+
+	// Shared pointer holds persistent last location for the lambda.
+	TSharedPtr<FTransform> LastTransform = MakeShared<FTransform>(Target->GetComponentToWorld());
+
+	if (bLocationChange && bRotationChange && bScaleChange)
+	{
+		Handle.DelegateHandle = Target->TransformUpdated.AddLambda(
+			[OnTransformUpdated, LastTransform, Tolerance](USceneComponent* UpdatedComponent, EUpdateTransformFlags /*UpdateTransformFlags*/, ETeleportType /*TeleportType*/)
+			{
+				const FTransform& NewTransform = UpdatedComponent->GetComponentToWorld();
+				if (!NewTransform.Equals(*LastTransform), Tolerance)
+				{
+					const FTransform OldTransform = *LastTransform;
+					*LastTransform = NewTransform;
+					OnTransformUpdated.ExecuteIfBound(UpdatedComponent, OldTransform, NewTransform);
+				}
+			}
+		);
+	}
+	else if(bLocationChange || bRotationChange || bScaleChange)
+	{
+		// Some mix of change notifies.
+		Handle.DelegateHandle = Target->TransformUpdated.AddLambda(
+			[OnTransformUpdated, LastTransform, bLocationChange, bRotationChange, bScaleChange, Tolerance](USceneComponent* UpdatedComponent, EUpdateTransformFlags /*UpdateTransformFlags*/, ETeleportType /*TeleportType*/)
+			{
+				const FTransform& NewTransform = UpdatedComponent->GetComponentToWorld();
+				if ((bLocationChange && !NewTransform.GetLocation().Equals(LastTransform->GetLocation(), Tolerance)) ||
+					(bRotationChange && !NewTransform.GetRotation().Equals(LastTransform->GetRotation(), Tolerance)) ||
+					(bScaleChange && !NewTransform.GetScale3D().Equals(LastTransform->GetScale3D(), Tolerance)))
+				{
+					const FTransform OldTransform = *LastTransform;
+					*LastTransform = NewTransform;
+					OnTransformUpdated.ExecuteIfBound(UpdatedComponent, OldTransform, NewTransform);
+				}
+			}
+		);
+	}
+	else
+	{
+		// no notify requested.
+	}
+
+	return Handle;
+}
+
+FDelegateHandleWrapper UExtendedUnrealLibrary::BindEventToOnLocationChanged(USceneComponent* Target, FLocationUpdatedDelegate OnLocationChanged)
 {
 	if (!IsValid(Target))
 	{
 		return FDelegateHandleWrapper();
 	}
 
+	// Shared pointer holds persistent last location for the lambda.
+	TSharedPtr<FVector> LastLocation = MakeShared<FVector>(Target->GetComponentLocation());
+
 	FDelegateHandleWrapper Handle;
 	Handle.DelegateHandle = Target->TransformUpdated.AddLambda(
-		[OnTransformUpdated](USceneComponent* UpdatedComponent, EUpdateTransformFlags /*UpdateTransformFlags*/, ETeleportType /*TeleportType*/)
+		[OnLocationChanged, LastLocation](USceneComponent* UpdatedComponent, EUpdateTransformFlags /*UpdateTransformFlags*/, ETeleportType /*TeleportType*/)
 		{
-			OnTransformUpdated.ExecuteIfBound(UpdatedComponent, UpdatedComponent->GetComponentToWorld());
+			const FVector& NewLocation = UpdatedComponent->GetComponentLocation();
+			if (!NewLocation.Equals(*LastLocation))
+			{
+				FVector OldLocation = *LastLocation;
+				*LastLocation = NewLocation;
+				OnLocationChanged.ExecuteIfBound(UpdatedComponent, OldLocation, NewLocation);
+			}
 		}
 	);
 
@@ -527,6 +630,16 @@ FDelegateHandleWrapper UExtendedUnrealLibrary::BindEventToOnTransformUpdated(USc
 }
 
 void UExtendedUnrealLibrary::UnbindEventFromOnTransformUpdated(USceneComponent* Target, const FDelegateHandleWrapper& Handle)
+{
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	Target->TransformUpdated.Remove(Handle.DelegateHandle);
+}
+
+void UExtendedUnrealLibrary::UnbindEventFromOnLocationUpdated(USceneComponent* Target, const FDelegateHandleWrapper& Handle)
 {
 	if (!IsValid(Target))
 	{
@@ -564,11 +677,11 @@ void UExtendedUnrealLibrary::SetAutoPossessAI(APawn* Pawn, EAutoPossessAI AutoPo
 	}
 }
 
-void UExtendedUnrealLibrary::SetPreviewSkeletalMesh(UAnimationAsset* AnimationAsset, USkeletalMesh* PreviewMesh)
+void UExtendedUnrealLibrary::SetPreviewSkeletalMesh(UAnimationAsset* VertexAnimationProfileAsset, USkeletalMesh* PreviewMesh)
 {
-	if (IsValid(AnimationAsset))
+	if (IsValid(VertexAnimationProfileAsset))
 	{
-		AnimationAsset->SetPreviewMesh(PreviewMesh);
+		VertexAnimationProfileAsset->SetPreviewMesh(PreviewMesh);
 	}
 }
 
@@ -1083,48 +1196,31 @@ bool UExtendedUnrealLibrary::OrientedBoxOverlapComponents(const UObject* WorldCo
 	return (OutComponents.Num() > 0);
 }
 
-bool UExtendedUnrealLibrary::SphereOverlapComponentCollision(const UPrimitiveComponent* Component, const FVector& Point, const float Radius, FName BoneName, FVector& OutPointOnBody, float& Distance)
+bool UExtendedUnrealLibrary::SphereOverlapComponentCollision(const UPrimitiveComponent* Component, const FVector& Point, const float Radius, FName BoneName, FVector& OutClosestPoint, double& OutDistance)
 {
 	if (Component)
 	{
 		if (FBodyInstance* BodyInst = Component->GetBodyInstance(BoneName, /*bGetWelded=*/ false))
 		{
-			float DistanceToPoint = BodyInst->GetDistanceToBody(Point, OutPointOnBody);
+			float DistanceToPoint = BodyInst->GetDistanceToBody(Point, OutClosestPoint);
 			if (DistanceToPoint >= 0)
 			{
-				Distance = FMath::Max(0, DistanceToPoint - Radius);
-				return Distance == 0;
+				OutDistance = FMath::Max(0, DistanceToPoint - Radius);
+				return OutDistance == 0;
 			}
 		}
 	}
 
-	OutPointOnBody = FVector::ZeroVector;
-	Distance = 0;
+	OutClosestPoint = FVector::ZeroVector;
+	OutDistance = 0;
 	return false;
 }
 
-
-bool UExtendedUnrealLibrary::GetClosestPointOnCollision(UPrimitiveComponent* Component, const FName BoneName, const FVector& Point, FVector& OutPointOnCollision, double& Distance)
-{
-	if (Component->IsCollisionEnabled())
-	{
-		Distance = Component->GetClosestPointOnCollision(Point, OutPointOnCollision, BoneName);
-		return Distance >= 0;
-	}
-	else
-	{
-		double DistanceSquared = 0;
-		bool bSuccess = UExtendedUnrealLibrary::GetClosestPointOnBodySetup(Component->GetBodySetup(), Component->GetComponentTransform(), Point, OutPointOnCollision, DistanceSquared);
-		Distance = FMath::Sqrt(DistanceSquared);
-		return bSuccess;
-	}
-}
-
-bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, const FTransform& BodyTransform, const FVector& Point, FVector& ClosestPoint, double& DistanceSquared)
+bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, const FTransform& BodyTransform, const FVector& Point, FVector& OutClosestPoint, double& DistanceSquared)
 {
 	if (!BodySetup)
 	{
-		ClosestPoint = FVector::ZeroVector;
+		OutClosestPoint = FVector::ZeroVector;
 		DistanceSquared = 0.0;
 		return false;
 	}
@@ -1144,7 +1240,7 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 		if (DistanceSq < ClosestDistanceSq)
 		{
 			ClosestDistanceSq = DistanceSq;
-			ClosestPoint = LocalClosestPoint;
+			OutClosestPoint = LocalClosestPoint;
 			bFoundPoint = true;
 		}
 	}
@@ -1159,7 +1255,7 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 		if (DistanceSq < ClosestDistanceSq)
 		{
 			ClosestDistanceSq = DistanceSq;
-			ClosestPoint = LocalClosestPoint;
+			OutClosestPoint = LocalClosestPoint;
 			bFoundPoint = true;
 		}
 	}
@@ -1174,7 +1270,7 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 		if (DistanceSq < ClosestDistanceSq)
 		{
 			ClosestDistanceSq = DistanceSq;
-			ClosestPoint = LocalClosestPoint;
+			OutClosestPoint = LocalClosestPoint;
 			bFoundPoint = true;
 		}
 	}
@@ -1191,7 +1287,7 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 		if (DistanceSq < ClosestDistanceSq)
 		{
 			ClosestDistanceSq = DistanceSq;
-			ClosestPoint = LocalClosestPoint;
+			OutClosestPoint = LocalClosestPoint;
 			bFoundPoint = true;
 		}
 	}
@@ -1203,6 +1299,71 @@ bool UExtendedUnrealLibrary::GetClosestPointOnBodySetup(UBodySetup* BodySetup, c
 
 	return bFoundPoint;
 }
+
+bool UExtendedUnrealLibrary::GetClosestPointOnCollision(UPrimitiveComponent* Component, const FName BoneName, const FVector& Point, FVector& OutClosestPoint, double& OutDistance)
+{
+	if (Component->IsCollisionEnabled())
+	{
+		OutDistance = Component->GetClosestPointOnCollision(Point, OutClosestPoint, BoneName);
+		return OutDistance >= 0;
+	}
+	else
+	{
+		double DistanceSquared = 0;
+		bool bSuccess = UExtendedUnrealLibrary::GetClosestPointOnBodySetup(Component->GetBodySetup(), Component->GetComponentTransform(), Point, OutClosestPoint, DistanceSquared);
+		OutDistance = FMath::Sqrt(DistanceSquared);
+		return bSuccess;
+	}
+}
+
+bool UExtendedUnrealLibrary::GetClosestPointOnComponentBounds(UPrimitiveComponent* Component, const FVector& Point, FVector& OutClosestPoint, double& OutDistance)
+{
+	if (!IsValid(Component))
+	{
+		OutClosestPoint = FVector::ZeroVector;
+		OutDistance = -1.0;
+		return false;
+	}
+
+	// Get the component's local-space bounds.
+	// CalcBounds(FTransform::Identity) computes the bounds in object's local space.
+	const FBoxSphereBounds LocalBounds = Component->CalcBounds(FTransform::Identity);
+
+	if (!LocalBounds.GetBox().IsValid)
+	{
+		OutClosestPoint = FVector::ZeroVector;
+		OutDistance = -1.0; // Indicate invalid or empty local bounds
+		return false;
+	}
+
+	FOrientedBox OrientedBoundingBox;
+	{
+		const FTransform ComponentWorldTransform = Component->GetComponentTransform();
+		OrientedBoundingBox.Center = ComponentWorldTransform.TransformPosition(LocalBounds.GetBox().GetCenter());
+		OrientedBoundingBox.ExtentX = LocalBounds.GetBox().GetExtent().X;
+		OrientedBoundingBox.ExtentY = LocalBounds.GetBox().GetExtent().Y;
+		OrientedBoundingBox.ExtentZ = LocalBounds.GetBox().GetExtent().Z;
+		OrientedBoundingBox.AxisX = ComponentWorldTransform.GetRotation().GetForwardVector();
+		OrientedBoundingBox.AxisY = ComponentWorldTransform.GetRotation().GetRightVector();
+		OrientedBoundingBox.AxisZ = ComponentWorldTransform.GetRotation().GetUpVector();
+	}
+
+	{
+		const FTransform OBB_LocalToWorld = FTransform(OrientedBoundingBox.AxisX, OrientedBoundingBox.AxisY, OrientedBoundingBox.AxisZ, OrientedBoundingBox.Center);
+		const FVector LocalPoint = OBB_LocalToWorld.InverseTransformPosition(Point);
+		const FBox LocalAABB(
+			FVector(-OrientedBoundingBox.ExtentX, -OrientedBoundingBox.ExtentY, -OrientedBoundingBox.ExtentZ), // Min point
+			FVector(OrientedBoundingBox.ExtentX, OrientedBoundingBox.ExtentY, OrientedBoundingBox.ExtentZ)    // Max point
+		);
+		const FVector ClosestLocalPoint = LocalAABB.GetClosestPointTo(LocalPoint);
+		OutClosestPoint = OBB_LocalToWorld.TransformPosition(ClosestLocalPoint);
+	}
+
+	OutDistance = FVector::Dist(Point, OutClosestPoint);
+
+	return true;
+}
+
 
 TArray<FVectorArray> UExtendedUnrealLibrary::GetSegmentsOverlapingComponent(const TArray<FVector>& Path, const double CapsuleRadius, const double CapsuleHalfHeight, const FRotator CapsuleOrientation, UPrimitiveComponent* Component)
 {
@@ -1507,7 +1668,7 @@ bool UExtendedUnrealLibrary::SetJumpHeight(UCharacterMovementComponent* Characte
 //	}
 //}
 
-FVector UExtendedUnrealLibrary::GetCharacterOriginFromBaseLocation(ACharacter* Target, const FVector BaseLocation)
+FVector UExtendedUnrealLibrary::GetCharacterOriginFromBaseLocation(const ACharacter* Target, const FVector BaseLocation)
 {
 	if (!IsValid(Target))
 	{
@@ -1533,6 +1694,26 @@ FVector UExtendedUnrealLibrary::GetCharacterBaseLocation(const ACharacter* Targe
 
 	const float HalfHeight = Capsule->GetUnscaledCapsuleHalfHeight();
 	return Capsule->GetComponentTransform().TransformPosition(FVector(0, 0, -HalfHeight));
+}
+
+bool UExtendedUnrealLibrary::SetCharacterBaseLocation(ACharacter* Target, const FVector BaseLocation, bool bSweep, FHitResult& SweepHitResult, bool bTeleport)
+{
+	if (!IsValid(Target))
+	{
+		return false;
+	}
+
+	return Target->SetActorLocation(GetCharacterOriginFromBaseLocation(Target, BaseLocation), bSweep, &SweepHitResult, TeleportFlagToEnum(bTeleport));
+}
+
+bool UExtendedUnrealLibrary::SetCharacterBaseLocationAndRotation(ACharacter* Target, const FVector BaseLocation, FRotator BaseRotation, bool bSweep, FHitResult& SweepHitResult, bool bTeleport)
+{
+	if (!IsValid(Target))
+	{
+		return false;
+	}
+
+	return Target->SetActorLocationAndRotation(GetCharacterOriginFromBaseLocation(Target, BaseLocation), BaseRotation, bSweep, &SweepHitResult, TeleportFlagToEnum(bTeleport));
 }
 
 
@@ -1585,5 +1766,546 @@ void UExtendedUnrealLibrary::ProceduralMesh_SetUseComplexAsSimpleCollision(UProc
 	if (IsValid(Target))
 	{
 		Target->bUseComplexAsSimpleCollision = bUseComplexAsSimpleCollision;
+	}
+}
+
+void UExtendedUnrealLibrary::RegisterReferencedObject(UObject* WorldContext, UObject* Object)
+{
+	if (!Object)
+	{
+		ensureMsgf(Object != nullptr, TEXT("RegisterReferencedObject: Object is not valid."));
+		return;
+	}
+
+	if (Object->IsA<AActor>())
+	{
+		const AActor* Actor = Cast<AActor>(Object);
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("RegisterReferencedObject: Object '%s' is an Actor. Actors are not allowed to be registered."), *Actor->GetName());
+		return;
+	}
+	if (Object->IsA<UActorComponent>())
+	{
+		const UActorComponent* Comp = Cast<UActorComponent>(Object);
+		FString OwnerName = Comp->GetOwner() ? Comp->GetOwner()->GetName() : TEXT("None");
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("RegisterReferencedObject: Object `%s`:'%s' is a Component. Components are not allowed to be registered."), *OwnerName, *Comp->GetName());
+		return;
+	}
+
+	const UWorld* World = GEngine->GetWorldFromContextObject(Object, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World)
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("RegisterReferencedObject: World is not valid."));
+		return;
+	}
+
+	UGameInstance* GameInstance = World->GetGameInstance();
+	if (!GameInstance)
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("RegisterReferencedObject: GameInstance is not valid."));
+		return;
+	}
+
+	// Register the object with the game instance
+	GameInstance->RegisterReferencedObject(Object);
+}
+
+void UExtendedUnrealLibrary::UnregisterReferencedObject(UObject* WorldContext, UObject* Object)
+{
+	if (!Object)
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("UnregisterReferencedObject: Object is not valid"));
+		return;
+	}
+
+	// Don't allow actors or components
+	if (Object->IsA<AActor>())
+	{
+		const AActor* Actor = Cast<AActor>(Object);
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("UnregisterReferencedObject: Object '%s' is an Actor. Actors are not allowed to be registered."), *Actor->GetName());
+		return;
+	}
+	if (Object->IsA<UActorComponent>())
+	{
+		const UActorComponent* Comp = Cast<UActorComponent>(Object);
+		FString OwnerName = Comp->GetOwner() ? Comp->GetOwner()->GetName() : TEXT("None");
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("UnregisterReferencedObject: Object `%s`:'%s' is a Component. Components are not allowed to be registered."), *OwnerName, *Comp->GetName());
+		return;
+	}
+
+	const UWorld* World = GEngine->GetWorldFromContextObject(Object, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World)
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("UnregisterReferencedObject: World is not valid."));
+		return;
+	}
+
+	UGameInstance* GameInstance = World->GetGameInstance();
+	if (!GameInstance)
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("UnregisterReferencedObject: GameInstance is not valid."));
+		return;
+	}
+
+	// Unregister the object from the game instance
+	GameInstance->UnregisterReferencedObject(Object);
+}
+
+bool UExtendedUnrealLibrary::OpenDirectoryInFileSystem(const FString& DirectoryPath)
+{
+	if (FPaths::DirectoryExists(DirectoryPath))
+	{
+		FPlatformProcess::ExploreFolder(*DirectoryPath);
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogExtendedUnreal, Warning, TEXT("OpenDirectoryInFileSystem: Could not open directory, it does not exist: %s"), *DirectoryPath);
+		return false;
+	}
+}
+
+void UExtendedUnrealLibrary::ModifyAndCompileBlueprintClass(UClass* Class)
+{
+#if WITH_EDITOR
+	if (!IsValid(Class)) return;
+
+	UObject* CDO = Class->GetDefaultObject();
+	if (!IsValid(CDO)) return;
+
+	CDO->Modify();
+
+	if (UBlueprintGeneratedClass* BPGC = Cast<UBlueprintGeneratedClass>(Class))
+	{
+		if (UBlueprint* Blueprint = Cast<UBlueprint>(BPGC->ClassGeneratedBy))
+		{
+			Blueprint->Modify();
+			FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+			FKismetEditorUtilities::CompileBlueprint(Blueprint);
+			Blueprint->MarkPackageDirty();
+		}
+	}
+#endif
+}
+
+bool UExtendedUnrealLibrary::GetShaderCompilingStats(int32& TotalShadersCompiled, int32& LocalWorkersCount, int32& PendingJobsCount, int32& OutstandingJobsCount, int32& ExternalJobsCount, int32& RemainingJobsCount, bool& bHasShaderJobs, bool& bIsCompiling)
+{
+	if (GShaderCompilingManager)
+	{
+		{
+			FShaderCompilerStats Stats;
+			GShaderCompilingManager->GetLocalStats(Stats);
+			TotalShadersCompiled = Stats.GetTotalShadersCompiled();
+
+			////const TSparseArray<TMap<FString, FShaderStats>>& ShaderCompilerStats = Stats.GetShaderCompilerStats();
+			////for (const TMap<FString, FShaderStats>& Map : ShaderCompilerStats)
+			////{
+			////	for (const TPair<FString, FShaderStats>& ShaderStatsPair : Map)
+			////	{
+			////		const FString& ShaderStatsKey = ShaderStatsPair.Key;
+			////		const FShaderStats& ShaderStats = ShaderStatsPair.Value;
+			////		ShaderStats.Compiled;
+			////		ShaderStats.Cooked;
+			////		ShaderStats.CompileTime;
+			////		ShaderStats.CompiledDouble;
+			////		ShaderStats.CompileTime;
+			////		ShaderStats.PermutationCompilations;
+			////	}
+			////}
+			////TSharedPtr<FJsonObject> Json = Stats.ToJson();
+		}
+
+		LocalWorkersCount = GShaderCompilingManager->GetNumLocalWorkers();
+		OutstandingJobsCount = GShaderCompilingManager->GetNumOutstandingJobs();
+		PendingJobsCount = GShaderCompilingManager->GetNumPendingJobs();
+		RemainingJobsCount = GShaderCompilingManager->GetNumRemainingJobs();
+		ExternalJobsCount = RemainingJobsCount - OutstandingJobsCount;
+
+		bHasShaderJobs = GShaderCompilingManager->HasShaderJobs();
+		bIsCompiling = GShaderCompilingManager->IsCompiling();
+		return true;
+	}
+	else
+	{
+		TotalShadersCompiled = 0;
+		LocalWorkersCount = 0;
+		OutstandingJobsCount = 0;
+		PendingJobsCount = 0;
+		RemainingJobsCount = 0;
+		bHasShaderJobs = false;
+		bIsCompiling = false;
+		return false;
+	}
+}
+
+bool UExtendedUnrealLibrary::GetStaticSwitchBoolOverride(const UMaterialInstance* MaterialInstance, const FName ParameterName, bool& bValue)
+{
+	if (!MaterialInstance)
+	{
+		bValue = false;
+		return false;
+	}
+
+	const FStaticParameterSet& StaticParameters = MaterialInstance->GetStaticParameters();
+	for (const FStaticSwitchParameter& Param : StaticParameters.StaticSwitchParameters)
+	{
+		if (Param.ParameterInfo.Name == ParameterName)
+		{
+			bValue = Param.Value;
+			return true;
+		}
+	}
+
+	bValue = false;
+	return false;
+}
+
+bool UExtendedUnrealLibrary::GetStaticSwitchBoolValue(const UMaterialInterface* MaterialInterface, const FName ParameterName, bool& bValue)
+{
+	if (!MaterialInterface)
+	{
+		bValue = false;
+		return false;
+	}
+
+	const UMaterialInterface* Current = MaterialInterface;
+	while (Current)
+	{
+		// Check if it's a material instance first
+		if (const UMaterialInstance* MI = Cast<UMaterialInstance>(Current))
+		{
+			if (GetStaticSwitchBoolOverride(MI, ParameterName, bValue))
+			{
+				return true;
+			}
+			Current = MI->Parent;
+		}
+		else if (const UMaterial* BaseMat = Cast<UMaterial>(Current))
+		{
+			////// This code only works in editor
+			////#if WITH_EDITORONLY_DATA
+			////TArray<UMaterialExpressionStaticSwitchParameter*> Switches;
+			////BaseMat->GetAllExpressionsInMaterialAndFunctionsOfType(Switches);
+			////
+			////for (auto* Expr : Switches)
+			////{
+			////	if (Expr && Expr->ParameterName == ParameterName)
+			////	{
+			////		// reached base material and found the static switch parameter.
+			////		bValue = Expr->DefaultValue;
+			////		return true;
+			////	}
+			////}
+			////#endif //WITH_EDITORONLY_DATA
+
+			// reached base material but didn't find the parameter
+			bValue = false;
+			return false;
+		}
+		else
+		{
+			// unknown material type
+			bValue = false;
+			return false;
+		}
+	}
+
+	bValue = false;
+	return false;
+}
+
+void UExtendedUnrealLibrary::PlayWorldCameraShakeAdvanced(const UObject* WorldContextObject, TSubclassOf<class UCameraShakeBase> Shake, FVector Epicenter, float InnerRadius, float OuterRadius, float Falloff, bool bOrientShakeTowardsEpicenter, float Strength)
+{
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (World != nullptr)
+	{
+		//float APlayerCameraManager::CalcRadialShakeScale(APlayerCameraManager * Camera, FVector Epicenter, float InnerRadius, float OuterRadius, float Falloff)
+		const auto CalcRadialShakeScale = [](APlayerCameraManager* Camera, FVector Epicenter, float InnerRadius, float OuterRadius, float Falloff) -> float
+			{
+				// using camera location so stuff like spectator cameras get shakes applied sensibly as well
+				// need to ensure server has reasonably accurate camera position
+				FVector POVLoc = Camera->GetCameraLocation();
+
+				if (InnerRadius < OuterRadius)
+				{
+					float DistPct = ((Epicenter - POVLoc).Size() - InnerRadius) / (OuterRadius - InnerRadius);
+					DistPct = 1.f - FMath::Clamp(DistPct, 0.f, 1.f);
+					return FMath::Pow(DistPct, Falloff);
+				}
+				else
+				{
+					// ignore OuterRadius and do a cliff falloff at InnerRadius
+					return ((Epicenter - POVLoc).SizeSquared() < FMath::Square(InnerRadius)) ? 1.f : 0.f;
+				}
+			};
+
+		//APlayerCameraManager::PlayWorldCameraShake(World, Shake, Epicenter, InnerRadius, OuterRadius, Falloff, bOrientShakeTowardsEpicenter);
+		const auto PlayWorldCameraShake = [CalcRadialShakeScale, Strength](UWorld* InWorld, TSubclassOf<class UCameraShakeBase> Shake, FVector Epicenter, float InnerRadius, float OuterRadius, float Falloff, bool bOrientShakeTowardsEpicenter)
+			{
+				for (FConstPlayerControllerIterator Iterator = InWorld->GetPlayerControllerIterator(); Iterator; ++Iterator)
+				{
+					APlayerController* PlayerController = Iterator->Get();
+					if (PlayerController && PlayerController->PlayerCameraManager != NULL)
+					{
+						float ShakeScale = Strength * CalcRadialShakeScale(PlayerController->PlayerCameraManager, Epicenter, InnerRadius, OuterRadius, Falloff);
+
+						if (bOrientShakeTowardsEpicenter && PlayerController->GetPawn() != NULL)
+						{
+							const FVector CamLoc = PlayerController->PlayerCameraManager->GetCameraLocation();
+							PlayerController->ClientStartCameraShake(Shake, ShakeScale, ECameraShakePlaySpace::UserDefined, (Epicenter - CamLoc).Rotation());
+						}
+						else
+						{
+							PlayerController->ClientStartCameraShake(Shake, ShakeScale);
+						}
+					}
+				}
+			};
+
+		PlayWorldCameraShake(World, Shake, Epicenter, InnerRadius, OuterRadius, Falloff, bOrientShakeTowardsEpicenter);
+	}
+}
+
+bool UExtendedUnrealLibrary::PredictActorPath(const UObject* WorldContextObject, AActor* Actor, float PredictionTime, FPredictActorPathResult& OutResult, bool bTracePath, float ClampInitialVelocity, const TArray<AActor*>& ActorsToIgnore, EDrawDebugTrace::Type DrawDebugType, float DrawDebugTime, float SimFrequency)
+{
+	// Validate inputs
+	if (!Actor || PredictionTime <= 0.f)
+	{
+		OutResult = FPredictActorPathResult();
+		return false;
+	}
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World)
+	{
+		OutResult = FPredictActorPathResult();
+		return false;
+	}
+
+	UPrimitiveComponent* Component = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+	if (!Component)
+	{
+		OutResult = FPredictActorPathResult();
+		return false;
+	}
+
+	// Determine if we should use projectile motion
+	auto ShouldUseProjectileMotion = [Actor]() -> bool
+		{
+			// Check if it's a falling character
+			if (ACharacter* Character = Cast<ACharacter>(Actor))
+			{
+				if (UCharacterMovementComponent* MoveComp = Character->GetCharacterMovement())
+				{
+					if (MoveComp->IsFalling())
+					{
+						return true;
+					}
+				}
+			}
+
+			// Check if physics object with gravity enabled
+			if (UPrimitiveComponent* RootPrimitive = Cast<UPrimitiveComponent>(Actor->GetRootComponent()))
+			{
+				if (RootPrimitive->IsSimulatingPhysics() && RootPrimitive->IsGravityEnabled())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		};
+
+	FVector StartLocation = Actor->GetActorLocation();
+	FVector CurrentVelocity = Actor->GetVelocity();
+	if(ClampInitialVelocity > 0)
+	{
+		CurrentVelocity = CurrentVelocity.GetClampedToMaxSize(ClampInitialVelocity);
+	}
+	FQuat Rotation = Actor->GetActorQuat();
+
+	// Setup collision query params
+	FComponentQueryParams QueryParams(SCENE_QUERY_STAT(PredictActorPath));
+	QueryParams.AddIgnoredComponent(Component);
+	QueryParams.AddIgnoredActor(Actor);
+	QueryParams.AddIgnoredActors(ActorsToIgnore);
+
+	bool bUseProjectileMotion = ShouldUseProjectileMotion();
+
+	// ========== PROJECTILE MOTION PATH ==========
+	if (bUseProjectileMotion)
+	{
+		FVector CurrentLocation = StartLocation;
+		float GravityZ = World->GetGravityZ();
+
+		// Time step for simulation
+		const float TimeStep = 1.0f / FMath::Max(SimFrequency, 1.0f);
+		const int32 MaxSteps = FMath::CeilToInt(PredictionTime / TimeStep);
+
+		float ElapsedTime = 0.f;
+		bool bHitSomething = false;
+		FHitResult FinalHit;
+
+		if (bTracePath)
+		{
+			OutResult.PathPositions.Empty(MaxSteps + 1);
+			OutResult.PathPositions.Add(CurrentLocation);
+		}
+
+		// Simulate projectile motion step by step
+		for (int32 Step = 0; Step < MaxSteps; ++Step)
+		{
+			float DeltaTime = FMath::Min(TimeStep, PredictionTime - ElapsedTime);
+
+			// Calculate next position using kinematic equation
+			FVector NextLocation = CurrentLocation + (CurrentVelocity * DeltaTime);
+
+			// Apply gravity to velocity for next iteration
+			CurrentVelocity.Z += GravityZ * DeltaTime;
+
+			// Sweep component along path
+			TArray<FHitResult> OutHits;
+			World->ComponentSweepMulti(OutHits, Component, CurrentLocation, NextLocation, Rotation, QueryParams);
+
+			// Find first blocking hit
+			bool bHitThisStep = false;
+			for (const FHitResult& Hit : OutHits)
+			{
+				if (Hit.bBlockingHit)
+				{
+					bHitSomething = true;
+					bHitThisStep = true;
+					FinalHit = Hit;
+					OutResult.PredictedLocation = Hit.Location;
+					OutResult.TimeToHit = ElapsedTime + (DeltaTime * Hit.Time);
+
+					if (bTracePath)
+					{
+						OutResult.PathPositions.Add(Hit.Location);
+					}
+
+					break;
+				}
+			}
+
+			if (bHitThisStep)
+			{
+				break;
+			}
+
+			CurrentLocation = NextLocation;
+			ElapsedTime += DeltaTime;
+
+			if (bTracePath)
+			{
+				OutResult.PathPositions.Add(CurrentLocation);
+			}
+
+			if (ElapsedTime >= PredictionTime)
+			{
+				break;
+			}
+		}
+
+		// Fill result
+		OutResult.bBlockingHit = bHitSomething;
+		OutResult.HitResult = FinalHit;
+
+		if (!bHitSomething)
+		{
+			OutResult.PredictedLocation = CurrentLocation;
+			OutResult.TimeToHit = PredictionTime;
+		}
+
+		// Draw debug
+#if ENABLE_DRAW_DEBUG
+		if (DrawDebugType != EDrawDebugTrace::None)
+		{
+			const bool bPersistentLines = DrawDebugType == EDrawDebugTrace::Persistent;
+			const float LifeTime = (DrawDebugType == EDrawDebugTrace::ForDuration) ? DrawDebugTime : 0.f;
+
+			// Draw path
+			if (bTracePath && OutResult.PathPositions.Num() > 1)
+			{
+				for (int32 i = 0; i < OutResult.PathPositions.Num() - 1; ++i)
+				{
+					DrawDebugLine(World, OutResult.PathPositions[i], OutResult.PathPositions[i + 1],
+						bHitSomething ? FColor::Red : FColor::Green, bPersistentLines, LifeTime, 0, 2.0f);
+				}
+			}
+
+			// Draw final position
+			DrawDebugSphere(World, OutResult.PredictedLocation, 30.0f, 12,
+				bHitSomething ? FColor::Red : FColor::Green, bPersistentLines, LifeTime);
+
+			if (bHitSomething)
+			{
+				DrawDebugPoint(World, FinalHit.ImpactPoint, 15.0f, FColor::Red, bPersistentLines, LifeTime);
+				DrawDebugLine(World, FinalHit.ImpactPoint, FinalHit.ImpactPoint + FinalHit.ImpactNormal * 50.0f,
+					FColor::Yellow, bPersistentLines, LifeTime, 0, 2.0f);
+			}
+		}
+#endif
+
+		return bHitSomething;
+	}
+
+	// ========== LINEAR MOTION PATH ==========
+	else
+	{
+		FVector EndLocation = StartLocation + (CurrentVelocity * PredictionTime);
+
+		// Perform component sweep
+		TArray<FHitResult> OutHits;
+		World->ComponentSweepMulti(OutHits, Component, StartLocation, EndLocation, Rotation, QueryParams);
+
+		// Find first blocking hit
+		bool bHit = false;
+		FHitResult HitResult;
+		for (const FHitResult& Hit : OutHits)
+		{
+			if (Hit.bBlockingHit)
+			{
+				bHit = true;
+				HitResult = Hit;
+				break;
+			}
+		}
+
+		// Fill output result
+		OutResult.bBlockingHit = bHit;
+		OutResult.HitResult = HitResult;
+		OutResult.PredictedLocation = bHit ? HitResult.Location : EndLocation;
+		OutResult.TimeToHit = bHit ? (PredictionTime * HitResult.Time) : PredictionTime;
+
+		if (bTracePath)
+		{
+			OutResult.PathPositions.Empty(2);
+			OutResult.PathPositions.Add(StartLocation);
+			OutResult.PathPositions.Add(OutResult.PredictedLocation);
+		}
+
+		// Draw debug visualization
+#if ENABLE_DRAW_DEBUG
+		if (DrawDebugType != EDrawDebugTrace::None)
+		{
+			const bool bPersistentLines = DrawDebugType == EDrawDebugTrace::Persistent;
+			const float LifeTime = (DrawDebugType == EDrawDebugTrace::ForDuration) ? DrawDebugTime : 0.f;
+
+			DrawDebugLine(World, StartLocation, OutResult.PredictedLocation,
+				bHit ? FColor::Red : FColor::Green, bPersistentLines, LifeTime, 0, 2.0f);
+
+			DrawDebugSphere(World, OutResult.PredictedLocation, 30.0f, 12,
+				bHit ? FColor::Red : FColor::Green, bPersistentLines, LifeTime);
+
+			if (bHit)
+			{
+				DrawDebugPoint(World, HitResult.ImpactPoint, 15.0f, FColor::Red, bPersistentLines, LifeTime);
+				DrawDebugLine(World, HitResult.ImpactPoint, HitResult.ImpactPoint + HitResult.ImpactNormal * 50.0f,
+					FColor::Yellow, bPersistentLines, LifeTime, 0, 2.0f);
+			}
+		}
+#endif
+
+		return bHit;
 	}
 }

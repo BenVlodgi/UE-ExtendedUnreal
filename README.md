@@ -41,6 +41,7 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **Unreal** Library | Focus Viewport to Selection                      | Developer  |
 | Extended **Unreal** Library | Get Attached Actors of Class                     | Runtime    |
 | Extended **Unreal** Library | Get First Attached Actor of Class                | Runtime    |
+| Extended **Unreal** Library | Get Active (Safe) (Component)                    | Runtime    |
 | Extended **Unreal** Library | Set Active (Safe) (Component)                    | Runtime    |
 | Extended **Unreal** Library | Is Running Construction (Actor)                  | Runtime    |
 | Extended **Unreal** Library | Is Beginning Play (Actor)                        | Runtime    |
@@ -104,8 +105,9 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **Unreal** Library | Oriented Box Overlap Actors                      | Runtime    |
 | Extended **Unreal** Library | Oriented Box Overlap Components                  | Runtime    |
 | Extended **Unreal** Library | Sphere Overlap Component Collision               | Runtime    |
-| Extended **Unreal** Library | Get Closest Point on Collision                   | Runtime    |
 | Extended **Unreal** Library | Get Closest Point on BodySetup                   | Runtime    |
+| Extended **Unreal** Library | Get Closest Point on Collision                   | Runtime    |
+| Extended **Unreal** Library | Get Closest Point On Component Bounds            | Runtime    |
 | Extended **Unreal** Library | Get Segments overlaping Component                | Runtime    |
 | Extended **Unreal** Library | Is Level Name Valid                              | Runtime    |
 | Extended **Unreal** Library | Get Character Arrow                              | Developer  |
@@ -114,11 +116,24 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **Unreal** Library | Set Transient                                    | Runtime    |
 | Extended **Unreal** Library | Get Transient                                    | Runtime    |
 | Extended **Unreal** Library | Set Editor Only Actor                            | Runtime    |
+| Extended **Unreal** Library | Is Editor Only Actor                             | Runtime    |
 | Extended **Unreal** Library | Set Jump Height                                  | Runtime    |
 | Extended **Unreal** Library | Get Character Origin from Base Location          | Runtime    |
 | Extended **Unreal** Library | Get Character Base Location                      | Runtime    |
+| Extended **Unreal** Library | Set Character Base Location                      | Runtime    |
+| Extended **Unreal** Library | Set Character Base Location and Rotation         | Runtime    |
 | Extended **Unreal** Library | Find Actors by File Names                        | Runtime    |
 | Extended **Unreal** Library | Set UseComplexAsSimpleCollision (ProceduralMesh) | Runtime    |
+| Extended **Unreal** Library | Register Referenced Object                       | Runtime    |
+| Extended **Unreal** Library | Unregister Referenced Object                     | Runtime    |
+| Extended **Unreal** Library | Open Directory in File System                    | Runtime    |
+| Extended **Unreal** Library | Modify and Compile Blueprint Class               | Developer  |
+| Extended **Unreal** Library | Get Shader Compiling Stats                       | Runtime    |
+| Extended **Unreal** Library | Get StaticSwitch (bool) Parameter Override Value | Runtime    |
+| Extended **Unreal** Library | Get StaticSwitch (bool) Parameter Value          | Runtime    |
+| Extended **Unreal** Library | Play World Camera Shake (Advanced) -             | Runtime    |
+| Extended **Unreal** Library | Predict Actor Path                               | Runtime    |
+| Extended **Unreal** Library | Get Shader Compiling Stats                       | Runtime    |
 | Extended **Animation** Library | Get Blend Space Axis Min Max    | Runtime  |
 | Extended **Animation** Library | Get Linked Anim Layers          | Runtime  |
 | Extended **Animation** Library | Get All Animations              | Runtime  |

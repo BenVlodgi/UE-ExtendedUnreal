@@ -19,6 +19,11 @@
 			"Name": "ExtendedUnreal",
 			"Type": "Runtime",
 			"LoadingPhase": "PreLoadingScreen"
+		},
+		{
+			"Name": "ExtendedUnrealUncookedOnly",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

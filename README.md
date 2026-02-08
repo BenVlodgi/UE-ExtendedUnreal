@@ -202,6 +202,11 @@ Currently Compatible with Unreal Engine 5.5.
 | Extended **World** Library | World Type Query                   | Runtime |
 
 
+| Nodes | Description |
+|-------|-------------|
+| Is Pin Connected | Use in macros to determine if an input is connected to a pin. This allows for different behavior if a pin is left unconnected, such as using a default value instead of an input value. |
+
+
 | Macros                    | Description |
 |---------------------------|-------------|
 | Merge                     | Merges two execution lines together and returns which execution line was used. This is useful for feeding into a `Select`.                      |
@@ -219,6 +224,6 @@ Currently Compatible with Unreal Engine 5.5.
 | Style Image | Displays the image associated the [AppStyle](https://docs.unrealengine.com/5.0/en-US/API/Runtime/SlateCore/Styling/FAppStyle/)'s Property Name. |
 
 
-| Graph Nodes | Description |
-|-------------|-------------|
-| Sphere Trace by Profile (Control Rig) | Sweeps a sphere against the world and return the first blocking hit using a specific profile. (By default: Sphere traces exist in control rig, but not by profile) |
+| Control Rig Nodes | Description |
+|-------------------|-------------|
+| Sphere Trace by Profile | Sweeps a sphere against the world and return the first blocking hit using a specific profile. (By default: Sphere traces exist in control rig, but not by profile) |

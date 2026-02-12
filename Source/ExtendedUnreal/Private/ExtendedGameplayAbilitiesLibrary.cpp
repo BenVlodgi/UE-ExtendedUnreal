@@ -121,7 +121,7 @@ void UExtendedGameplayAbilitiesLibrary::TryCancelAbilitiesByTag(UAbilitySystemCo
 
 	for (const FGameplayAbilitySpec& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
 	{
-		if (!AbilitySpec.Ability || !AbilitySpec.IsActive() || !AbilitySpec.Ability->AbilityTags.HasTag(GameplayTag))
+		if (!AbilitySpec.Ability || !AbilitySpec.IsActive() || !AbilitySpec.Ability->GetAssetTags().HasTag(GameplayTag))
 		{
 			continue;
 		}

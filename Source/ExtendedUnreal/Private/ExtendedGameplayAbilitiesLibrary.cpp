@@ -121,7 +121,11 @@ void UExtendedGameplayAbilitiesLibrary::TryCancelAbilitiesByTag(UAbilitySystemCo
 
 	for (const FGameplayAbilitySpec& AbilitySpec : AbilitySystemComponent->GetActivatableAbilities())
 	{
+#if (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 5) || ENGINE_MAJOR_VERSION > 5 // On or after UE 5.5
 		if (!AbilitySpec.Ability || !AbilitySpec.IsActive() || !AbilitySpec.Ability->GetAssetTags().HasTag(GameplayTag))
+#else // Before UE 5.5
+		if (!AbilitySpec.Ability || !AbilitySpec.IsActive() || !AbilitySpec.Ability->AbilityTags.HasTag(GameplayTag))
+#endif
 		{
 			continue;
 		}
